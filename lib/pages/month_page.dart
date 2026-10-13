@@ -112,36 +112,45 @@ class MonthPage extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(5),
         child: inMonth
-            ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                GestureDetector(
-                  onTap: () => AppScope.of(context).openDay(date),
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.center,
-                    decoration: isEv
-                        ? const BoxDecoration(color: C.gold, shape: BoxShape.circle)
-                        : null,
-                    child: Text('$day',
-                        style: T.sans(14,
-                            color: isEv
-                                ? Colors.white
-                                : (isHol ? C.holiday : (weekend ? C.gold : C.navy)),
-                            w: FontWeight.w700)),
-                  ),
+            // ClipRect + OverflowBox: the row height is deliberately tight so
+            // the whole month fits the viewport, so a day carrying several
+            // holidays can have more content than the cell. Let the column
+            // size to its content and clip it, rather than asserting overflow.
+            ? ClipRect(
+                child: OverflowBox(
+                  minHeight: 0,
+                  maxHeight: double.infinity,
+                  alignment: Alignment.topLeft,
+                  child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    GestureDetector(
+                      onTap: () => AppScope.of(context).openDay(date),
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        alignment: Alignment.center,
+                        decoration: isEv
+                            ? const BoxDecoration(color: C.gold, shape: BoxShape.circle)
+                            : null,
+                        child: Text('$day',
+                            style: T.sans(14,
+                                color: isEv
+                                    ? Colors.white
+                                    : (isHol ? C.holiday : (weekend ? C.gold : C.navy)),
+                                w: FontWeight.w700)),
+                      ),
+                    ),
+                    for (final h in hol) DayMark(text: h.en, color: C.holiday),
+                    for (final e in evs) DayMark(text: e.en, color: C.gold),
+                    const SizedBox(height: 3),
+                    EditableBox(
+                      storeKey: 'day:${dateKey(date)}',
+                      minLines: 1,
+                      maxLines: noteMax,
+                      style: T.sans(10),
+                    ),
+                  ]),
                 ),
-                for (final h in hol) DayMark(text: h.en, color: C.holiday),
-                for (final e in evs) DayMark(text: e.en, color: C.gold),
-                const SizedBox(height: 3),
-                Expanded(
-                  child: EditableBox(
-                    storeKey: 'day:${dateKey(date)}',
-                    minLines: 1,
-                    maxLines: noteMax,
-                    style: T.sans(10),
-                  ),
-                ),
-              ])
+              )
             : null,
       ),
     );

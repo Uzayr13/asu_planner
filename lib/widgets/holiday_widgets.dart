@@ -40,13 +40,18 @@ class HolidayList extends StatelessWidget {
               child: Text(month == null ? 'PUBLIC HOLIDAYS 2027' : 'PUBLIC HOLIDAYS',
                   style: T.sans(10.5, color: C.holiday, w: FontWeight.w700, spacing: 2)),
             ),
-            Text('العطل الرسمية',
-                textDirection: TextDirection.rtl, style: T.ar(13, color: C.holiday)),
+            Flexible(
+              child: Text('العطل الرسمية',
+                  textDirection: TextDirection.rtl, style: T.ar(13, color: C.holiday)),
+            ),
           ]),
           const SizedBox(height: 8),
           for (final r in rows)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
+              // The Arabic holiday name is the long one and used to have no
+              // flex at all, pushing the row 23-48px past its edge. Give it
+              // and the English name room to wrap instead.
               child: Row(children: [
                 Container(
                     width: 9,
@@ -59,11 +64,18 @@ class HolidayList extends StatelessWidget {
                       '${daysFullEn[r.date.weekday - 1].substring(0, 3)} ${r.date.day} ${monthsEn[r.date.month - 1].substring(0, 3)}',
                       style: T.sans(11.5, w: FontWeight.w700)),
                 ),
-                Expanded(
-                  child: Text('${r.en}${r.prov ? ' *' : ''}', style: T.sans(12)),
+                Flexible(
+                  child: Text('${r.en}${r.prov ? ' *' : ''}',
+                      maxLines: 2, overflow: TextOverflow.ellipsis, style: T.sans(12)),
                 ),
                 const SizedBox(width: 8),
-                Text(r.ar, textDirection: TextDirection.rtl, style: T.ar(12.5, color: r.color)),
+                Flexible(
+                  child: Text(r.ar,
+                      textDirection: TextDirection.rtl,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: T.ar(12.5, color: r.color)),
+                ),
               ]),
             ),
           if (anyProv) ...[

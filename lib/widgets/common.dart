@@ -149,9 +149,13 @@ class PageFooter extends StatelessWidget {
             child: Text('Swipe to turn the page',
                 style: T.sans(10.5, color: C.gold, w: FontWeight.w700)),
           ),
-          Text('اتحاد متحدثي اللغة العربية - موريشيوس',
-              textDirection: TextDirection.rtl,
-              style: T.ar(11, color: C.navy.withValues(alpha: .75))),
+          Flexible(
+            child: Text('اتحاد متحدثي اللغة العربية - موريشيوس',
+                textDirection: TextDirection.rtl,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: T.ar(11, color: C.navy.withValues(alpha: .75))),
+          ),
         ]),
       ),
     );
@@ -183,15 +187,30 @@ class SectionHeader extends StatelessWidget {
         Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(titleEn, style: T.serif(size)),
-              Text(subEn, style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
+              // FittedBox: at 1.5x+ text scale a long weekday ("Wednesday")
+              // at 36pt is wider than the column and overflowed it. Scale the
+              // title to fit rather than clip it.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(titleEn, style: T.serif(size)),
+              ),
+              Text(subEn,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
             ]),
           ),
-          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(titleAr, textDirection: TextDirection.rtl, style: T.arDisplay(size * .95)),
-            if (subAr != null)
-              Text(subAr!, textDirection: TextDirection.rtl, style: T.ar(12, color: C.gold)),
-          ]),
+          Flexible(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(titleAr,
+                    textDirection: TextDirection.rtl, style: T.arDisplay(size * .95)),
+              ),
+              if (subAr != null)
+                Text(subAr!, textDirection: TextDirection.rtl, style: T.ar(12, color: C.gold)),
+            ]),
+          ),
         ]),
         const SizedBox(height: 10),
         const DottedRule(),
@@ -374,20 +393,26 @@ class HearButton extends StatelessWidget {
               border: Border.all(color: C.goldBright, width: 1.3),
               borderRadius: BorderRadius.circular(30),
             ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(on ? Icons.stop_rounded : Icons.volume_up_rounded,
-                  size: compact ? 14 : 18, color: on ? C.navy : C.goldBright),
-              const SizedBox(width: 6),
-              Text(on ? 'Stop' : 'Hear now',
-                  style: T.sans(compact ? 10 : 12,
-                      color: on ? C.navy : C.goldBright, w: FontWeight.w700)),
-              if (!compact) ...[
+            // FittedBox: the pill has a natural width from icon + two labels
+            // and used to overflow its column on narrow cards. Shrink it to
+            // fit rather than push past the edge.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(on ? Icons.stop_rounded : Icons.volume_up_rounded,
+                    size: compact ? 14 : 18, color: on ? C.navy : C.goldBright),
                 const SizedBox(width: 6),
-                Text('استمع',
-                    textDirection: TextDirection.rtl,
-                    style: T.ar(12, color: on ? C.navy : C.goldBright, w: FontWeight.w700)),
-              ],
-            ]),
+                Text(on ? 'Stop' : 'Hear now',
+                    style: T.sans(compact ? 10 : 12,
+                        color: on ? C.navy : C.goldBright, w: FontWeight.w700)),
+                if (!compact) ...[
+                  const SizedBox(width: 6),
+                  Text('استمع',
+                      textDirection: TextDirection.rtl,
+                      style: T.ar(12, color: on ? C.navy : C.goldBright, w: FontWeight.w700)),
+                ],
+              ]),
+            ),
           ),
         );
       },
