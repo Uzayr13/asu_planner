@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../audio/word_audio.dart';
 import '../data/calendar_math.dart';
 import '../data/content.dart';
+import '../layout/layout.dart';
 import '../store.dart';
 import '../theme.dart';
 
@@ -97,6 +98,7 @@ class MonthTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final l = L.of(context);
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Row(children: [
@@ -105,18 +107,24 @@ class MonthTabs extends StatelessWidget {
             child: GestureDetector(
               onTap: () => app.openMonth(m, switchToMonthView: openMonthView),
               child: Container(
-                height: 30,
+                constraints: const BoxConstraints(minHeight: 30),
                 margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                padding: EdgeInsets.symmetric(vertical: l.gapXs),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: active == m ? C.navy : C.tab,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
-                child: Text(
-                  monthsEn[m - 1].substring(0, 3).toUpperCase(),
-                  style: T.sans(8.5,
-                      color: active == m ? Colors.white : C.navy.withValues(alpha: .65),
-                      w: FontWeight.w700),
+                // Twelve chips share one row: at 320pt or large text scale the
+                // label would clip, so shrink it to the chip instead.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    monthsEn[m - 1].substring(0, 3).toUpperCase(),
+                    style: T.sans(8.5,
+                        color: active == m ? Colors.white : C.navy.withValues(alpha: .65),
+                        w: FontWeight.w700),
+                  ),
                 ),
               ),
             ),
@@ -166,18 +174,21 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // On short viewports (phone landscape) a 40pt title eats most of the
+    // visible height — shrink it there rather than crowding out the content.
+    final size = L.of(context).titleSizeFor(titleSize);
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Column(children: [
         Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(titleEn, style: T.serif(titleSize)),
+              Text(titleEn, style: T.serif(size)),
               Text(subEn, style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
             ]),
           ),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(titleAr, textDirection: TextDirection.rtl, style: T.arDisplay(titleSize * .95)),
+            Text(titleAr, textDirection: TextDirection.rtl, style: T.arDisplay(size * .95)),
             if (subAr != null)
               Text(subAr!, textDirection: TextDirection.rtl, style: T.ar(12, color: C.gold)),
           ]),
