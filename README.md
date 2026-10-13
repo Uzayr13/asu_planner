@@ -5,15 +5,49 @@ See `planner-app-spec.md` for the full spec.
 
 ## Run
 
-This project ships without the platform folders. Generate them in place, then run:
+All six platform folders are present (`android/`, `ios/`, `macos/`, `web/`,
+`windows/`, `linux/`). No `flutter create` step is needed.
 
 ```bash
-cd asu_planner
-flutter create . --project-name asu_planner --platforms android,ios
 flutter pub get
-flutter test
-flutter run
+flutter test          # date-math + layout smoke tests
+flutter run           # picks a connected device
 ```
+
+Web is the fastest way to see it in a browser:
+
+```bash
+flutter run -d web-server --web-port 8080 --web-hostname 127.0.0.1
+```
+
+Desktop runners are generated but must be built on their own OS —
+`flutter build windows` on Windows, `flutter build linux` on Linux.
+
+## Reverting
+
+Every change is its own commit, tagged and pushed, so you can go back to any
+point by name:
+
+```bash
+git tag --list 'v*'      # see the list
+git checkout v0.2.4      # the state where the month grid first fitted the viewport
+git revert <commit>      # undo just that one change
+```
+
+The version in `pubspec.yaml` is the single source of truth and bumps with each
+tag.
+
+## Responsive layout
+
+The planner fits 320pt phones through desktop and web, portrait and landscape.
+`lib/layout/layout.dart` is the single authority for that: width bands, spacing
+tokens, and the formulas for month row height, mini-month markers and habit
+dots. Breakpoints only change structure; everything else derives from the
+available space.
+
+`tool/screenshot_matrix.mjs` screenshots every view at ten viewport sizes into
+`shots/` — the only visual regression check, since the UI renders to canvas and
+cannot be asserted on directly.
 
 ## Structure
 
