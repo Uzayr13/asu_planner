@@ -43,7 +43,13 @@ class DayPage extends StatelessWidget {
               Expanded(
                 child: Text(en, style: T.sans(11, color: C.gold, w: FontWeight.w700, spacing: 2)),
               ),
-              Text(ar, textDirection: TextDirection.rtl, style: T.ar(13, color: C.gold)),
+              Flexible(
+                child: Text(ar,
+                    textDirection: TextDirection.rtl,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.ar(13, color: C.gold)),
+              ),
             ]),
           ),
         );
@@ -114,7 +120,10 @@ class DayPage extends StatelessWidget {
               Container(
                 constraints: const BoxConstraints(minHeight: 46),
                 decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: C.line, width: .8))),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                // crossAxisAlignment.start, not stretch: the container only
+                // floors the height (minHeight), so stretching children to it
+                // is unbounded and overflows.
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   SizedBox(
                     width: 54,
                     child: Padding(
@@ -195,11 +204,21 @@ class _Chip extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: T.sans(8.5, color: color, w: FontWeight.w700, spacing: 1.5)),
-                Text(en, style: T.sans(13, w: FontWeight.w700)),
+                Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.sans(8.5, color: color, w: FontWeight.w700, spacing: 1.5)),
+                Text(en,
+                    maxLines: 1, overflow: TextOverflow.ellipsis, style: T.sans(13, w: FontWeight.w700)),
               ]),
             ),
-            Text(ar, textDirection: TextDirection.rtl, style: T.ar(14, color: color)),
+            Flexible(
+              child: Text(ar,
+                  textDirection: TextDirection.rtl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.ar(14, color: color)),
+            ),
           ]),
         ),
       );

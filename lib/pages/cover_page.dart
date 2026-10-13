@@ -68,19 +68,27 @@ class CoverPage extends StatelessWidget {
                 ]),
               ),
               const Spacer(flex: 2),
-              Text('TAP TO OPEN · اضغط للفتح',
-                  style: T.sans(11,
-                      color: C.goldBright, w: FontWeight.w700, spacing: 2)),
-              SizedBox(height: l.gapM),
-              Column(children: [
-                Text('اتحاد متحدثي اللغة العربية - موريشيوس',
-                    textDirection: TextDirection.rtl,
-                    style: T.ar(17, color: Colors.white70)),
-                SizedBox(height: l.gapS),
-                Text('ARABIC SPEAKING UNION - MAURITIUS',
-                    style: T.sans(10.5, color: Colors.white54, spacing: 3)),
-              ]),
-              SizedBox(height: l.gapL),
+              // Hint and footer are chrome, not content: clamp their text
+              // scale so 2x accessibility text cannot outgrow the spacer
+              // layout on short viewports.
+              MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.4,
+                child: Column(children: [
+                  Text('TAP TO OPEN · اضغط للفتح',
+                      style: T.sans(11,
+                          color: C.goldBright, w: FontWeight.w700, spacing: 2)),
+                  SizedBox(height: l.gapM),
+                  Column(children: [
+                    Text('اتحاد متحدثي اللغة العربية - موريشيوس',
+                        textDirection: TextDirection.rtl,
+                        style: T.ar(17, color: Colors.white70)),
+                    SizedBox(height: l.gapS),
+                    Text('ARABIC SPEAKING UNION - MAURITIUS',
+                        style: T.sans(10.5, color: Colors.white54, spacing: 3)),
+                  ]),
+                  SizedBox(height: l.gapL),
+                ]),
+              ),
             ]);
             }),
           ),

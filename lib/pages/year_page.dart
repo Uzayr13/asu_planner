@@ -24,17 +24,27 @@ class YearPage extends StatelessWidget {
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('$planYear', style: T.serif(40)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('$planYear', style: T.serif(40)),
+                  ),
                   Text('YEAR AT A GLANCE',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
                 ]),
               ),
-              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text(toArabicDigits(planYear),
-                    textDirection: TextDirection.rtl, style: T.arDisplay(44)),
-                Text('نظرة على السنة',
-                    textDirection: TextDirection.rtl, style: T.ar(13, color: C.gold)),
-              ]),
+              Flexible(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(toArabicDigits(planYear),
+                        textDirection: TextDirection.rtl, style: T.arDisplay(44)),
+                  ),
+                  Text('نظرة على السنة',
+                      textDirection: TextDirection.rtl, style: T.ar(13, color: C.gold)),
+                ]),
+              ),
             ]),
             const SizedBox(height: 10),
             const DottedRule(),
@@ -121,8 +131,17 @@ class MiniMonth extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(monthsEn[month - 1], style: T.serif(14)),
-              Text(monthsAr[month - 1], textDirection: TextDirection.rtl, style: T.arDisplay(14)),
+              Flexible(
+                child: Text(monthsEn[month - 1],
+                    maxLines: 1, overflow: TextOverflow.ellipsis, style: T.serif(14)),
+              ),
+              Flexible(
+                child: Text(monthsAr[month - 1],
+                    textDirection: TextDirection.rtl,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.arDisplay(14)),
+              ),
             ]),
             Container(height: 1.5, color: C.gold, margin: const EdgeInsets.symmetric(vertical: 4)),
             GridView.count(
@@ -162,7 +181,13 @@ class _EventBanner extends StatelessWidget {
                 TextSpan(text: ': ${event.en}', style: T.sans(13)),
               ])),
             ),
-            Text(event.ar, textDirection: TextDirection.rtl, style: T.ar(14, color: C.gold)),
+            Flexible(
+              child: Text(event.ar,
+                  textDirection: TextDirection.rtl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.ar(14, color: C.gold)),
+            ),
           ]),
         ),
       );
