@@ -10,6 +10,7 @@ import 'pages/words_page.dart';
 import 'pages/year_page.dart';
 import 'store.dart';
 import 'theme.dart';
+import 'layout/layout.dart';
 import 'widgets/common.dart';
 
 Future<void> main() async {
@@ -44,6 +45,9 @@ class _PlannerAppState extends State<PlannerApp> {
             title: 'المفكرة الرقمية · Digital Planner 2027',
             debugShowCheckedModeBanner: false,
             theme: buildTheme(),
+            // Single choke point for the width-based type scale: every T.*
+            // style scales without its call site knowing about layout.
+            builder: (context, child) => TypeScale(child: child ?? const SizedBox.shrink()),
             // UI chrome is LTR; Arabic strings set their own RTL direction.
             locale: const Locale('en'),
             supportedLocales: const [Locale('en'), Locale('ar')],
@@ -145,19 +149,24 @@ class _ViewBar extends StatelessWidget {
                   onTap: () => app.show(mode),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(icon,
-                          size: 22, color: app.view == mode ? C.goldBright : Colors.white54),
-                      const SizedBox(height: 2),
-                      Text(en,
-                          style: T.sans(10,
-                              color: app.view == mode ? C.goldBright : Colors.white70,
-                              w: FontWeight.w700)),
-                      Text(ar,
-                          textDirection: TextDirection.rtl,
-                          style: T.ar(9.5,
-                              color: app.view == mode ? C.goldBright : Colors.white54)),
-                    ]),
+                    // Chrome must not blow up with accessibility text scale —
+                    // clamp it so the six tabs always fit the bar.
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.4,
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(icon,
+                            size: 22, color: app.view == mode ? C.goldBright : Colors.white54),
+                        const SizedBox(height: 2),
+                        Text(en,
+                            style: T.sans(10,
+                                color: app.view == mode ? C.goldBright : Colors.white70,
+                                w: FontWeight.w700)),
+                        Text(ar,
+                            textDirection: TextDirection.rtl,
+                            style: T.ar(9.5,
+                                color: app.view == mode ? C.goldBright : Colors.white54)),
+                      ]),
+                    ),
                   ),
                 ),
               ),
