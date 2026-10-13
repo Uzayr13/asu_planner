@@ -152,10 +152,14 @@ class _ViewBar extends StatelessWidget {
                             style: T.sans(10,
                                 color: app.view == mode ? C.goldBright : Colors.white70,
                                 w: FontWeight.w700)),
-                        Text(ar,
-                            textDirection: TextDirection.rtl,
-                            style: T.ar(9.5,
-                                color: app.view == mode ? C.goldBright : Colors.white54)),
+                        // Six tabs share the bar; on the narrowest band the
+                        // Arabic sub-label would clip, so drop it rather than
+                        // cut it. The English label still identifies the tab.
+                        if (L.of(context).band != WidthBand.xs)
+                          Text(ar,
+                              textDirection: TextDirection.rtl,
+                              style: T.ar(9.5,
+                                  color: app.view == mode ? C.goldBright : Colors.white54)),
                       ]),
                     ),
                   ),
