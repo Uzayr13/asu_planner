@@ -69,23 +69,14 @@ class PlannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
 
-    // Cover: tap anywhere to open the planner.
+    // Cover: tap anywhere to open the planner. The cover owns its own layout,
+    // including the tap hint — stacking it here at a fixed bottom offset made
+    // it collide with the footer on short viewports.
     if (!app.opened) {
       return Scaffold(
         body: GestureDetector(
           onTap: app.open,
-          child: Stack(children: [
-            const CoverPage(),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 110,
-              child: Center(
-                child: Text('TAP TO OPEN · اضغط للفتح',
-                    style: T.sans(11, color: C.goldBright, w: FontWeight.w700, spacing: 2)),
-              ),
-            ),
-          ]),
+          child: const CoverPage(),
         ),
       );
     }

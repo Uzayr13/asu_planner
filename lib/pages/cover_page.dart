@@ -2,50 +2,88 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../layout/layout.dart';
 import '../theme.dart';
 
 /// Page 1. Drawn entirely in code (no image assets needed).
+///
+/// Layout is a Column of spacers rather than absolutely positioned blocks: at
+/// phone-landscape heights the old `Alignment(0, -0.35)` pushed the 210pt
+/// emblem off the top and stacked the title, tap hint and footer on top of
+/// each other. Spacing here is derived from [L] so the block scales down on
+/// short viewports instead of overflowing.
 class CoverPage extends StatelessWidget {
   const CoverPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
+
     return SizedBox.expand(
       child: Stack(children: [
         Positioned.fill(child: CustomPaint(painter: _CoverPainter())),
-        Align(
-          alignment: const Alignment(0, -0.35),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            SizedBox(
-              width: 210,
-              height: 210,
-              child: Stack(alignment: Alignment.center, children: [
-                CustomPaint(size: const Size(210, 210), painter: _EmblemPainter()),
-                Text('٢٠٢٧', style: T.arDisplay(52, color: C.goldBright)),
+        // Positioned.fill, not a bare SafeArea: a non-positioned Stack child
+        // is sized to its intrinsic width and aligned topStart, which shoved
+        // the whole hero block against the left edge.
+        Positioned.fill(
+          child: SafeArea(
+            child: LayoutBuilder(builder: (context, c) {
+            // Short or wide viewports (phone landscape) need a smaller emblem
+            // and tighter gaps or the stack still runs past the fold.
+            final short = l.isShort || c.maxHeight < 520;
+            final emblem =
+                (short ? c.maxHeight * .32 : c.maxHeight * .34).clamp(88.0, 210.0);
+
+            return Column(children: [
+              const Spacer(flex: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(
+                    width: emblem,
+                    height: emblem,
+                    child: Stack(alignment: Alignment.center, children: [
+                      CustomPaint(
+                          size: Size.square(emblem), painter: _EmblemPainter()),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('٢٠٢٧',
+                            style: T.arDisplay(52, color: C.goldBright)),
+                      ),
+                    ]),
+                  ),
+                  SizedBox(height: short ? l.gapL : l.gapXl + G.s),
+                  Text('المفكرة الرقمية',
+                      textDirection: TextDirection.rtl,
+                      style: T.arDisplay(46, color: C.silver)),
+                  SizedBox(height: l.gapS),
+                  Text('DIGITAL PLANNER 2027',
+                      style: T.sans(16,
+                          color: C.goldBright,
+                          w: FontWeight.w700,
+                          spacing: 5)),
+                  SizedBox(height: l.gapS),
+                  Text('Arabic · English',
+                      style: T.sans(12, color: Colors.white54, spacing: 2)),
+                ]),
+              ),
+              const Spacer(flex: 2),
+              Text('TAP TO OPEN · اضغط للفتح',
+                  style: T.sans(11,
+                      color: C.goldBright, w: FontWeight.w700, spacing: 2)),
+              SizedBox(height: l.gapM),
+              Column(children: [
+                Text('اتحاد متحدثي اللغة العربية - موريشيوس',
+                    textDirection: TextDirection.rtl,
+                    style: T.ar(17, color: Colors.white70)),
+                SizedBox(height: l.gapS),
+                Text('ARABIC SPEAKING UNION - MAURITIUS',
+                    style: T.sans(10.5, color: Colors.white54, spacing: 3)),
               ]),
-            ),
-            const SizedBox(height: 28),
-            Text('المفكرة الرقمية',
-                textDirection: TextDirection.rtl, style: T.arDisplay(46, color: C.silver)),
-            const SizedBox(height: 6),
-            Text('DIGITAL PLANNER 2027',
-                style: T.sans(16, color: C.goldBright, w: FontWeight.w700, spacing: 5)),
-            const SizedBox(height: 8),
-            Text('Arabic · English',
-                style: T.sans(12, color: Colors.white54, spacing: 2)),
-          ]),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 28,
-          child: Column(children: [
-            Text('اتحاد متحدثي اللغة العربية - موريشيوس',
-                textDirection: TextDirection.rtl, style: T.ar(17, color: Colors.white70)),
-            const SizedBox(height: 6),
-            Text('ARABIC SPEAKING UNION - MAURITIUS',
-                style: T.sans(10.5, color: Colors.white54, spacing: 3)),
-          ]),
+              SizedBox(height: l.gapL),
+            ]);
+            }),
+          ),
         ),
       ]),
     );
@@ -58,15 +96,20 @@ class _CoverPainter extends CustomPainter {
     // Background
     canvas.drawRect(Offset.zero & s, Paint()..color = C.coverNavy);
 
+    // Every vertical offset is a fraction of mh, not an absolute pixel: a
+    // 375pt-tall landscape window must not stretch the scene past its edge.
+    final mh = math.min(s.width, s.height);
+
     // Faint star pattern in the top ~60%
     final p = Paint()
       ..color = C.goldBright.withValues(alpha: .10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    const step = 56.0;
-    for (var y = 20.0; y < s.height * .6; y += step) {
-      for (var x = 20.0; x < s.width + step; x += step) {
-        _star(canvas, Offset(x, y), 14, p);
+    final step = math.max(36.0, mh / 7);
+    final starR = step * .25;
+    for (var y = step * .35; y < s.height * .6; y += step) {
+      for (var x = step * .35; x < s.width + step; x += step) {
+        _star(canvas, Offset(x, y), starR, p);
         canvas.drawCircle(Offset(x, y), 2, p..style = PaintingStyle.fill);
         p.style = PaintingStyle.stroke;
       }
@@ -87,8 +130,9 @@ class _CoverPainter extends CustomPainter {
       ..color = Colors.white.withValues(alpha: .18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
+    final waveGap = math.max(10.0, mh / 28);
     for (var i = 0; i < 5; i++) {
-      final y = seaTop + 24 + i * 22.0;
+      final y = seaTop + waveGap + i * waveGap;
       final path = Path()..moveTo(0, y);
       for (var x = 0.0; x <= s.width; x += 4) {
         path.lineTo(x, y + math.sin(x / 26 + i) * 5);
@@ -99,27 +143,28 @@ class _CoverPainter extends CustomPainter {
     // Mountain silhouette
     final m = Path()
       ..moveTo(0, seaTop)
-      ..lineTo(s.width * .15, seaTop - 12)
-      ..lineTo(s.width * .32, seaTop - 55)
-      ..lineTo(s.width * .45, seaTop - 100)
-      ..lineTo(s.width * .60, seaTop - 100)
-      ..lineTo(s.width * .72, seaTop - 55)
-      ..lineTo(s.width * .85, seaTop - 18)
+      ..lineTo(s.width * .15, seaTop - mh * .04)
+      ..lineTo(s.width * .32, seaTop - mh * .16)
+      ..lineTo(s.width * .45, seaTop - mh * .30)
+      ..lineTo(s.width * .60, seaTop - mh * .30)
+      ..lineTo(s.width * .72, seaTop - mh * .16)
+      ..lineTo(s.width * .85, seaTop - mh * .065)
       ..lineTo(s.width, seaTop)
       ..close();
     canvas.drawPath(m, Paint()..color = const Color(0xFF080F1C));
 
     // Sun / moon
-    final c = Offset(s.width * .76, seaTop - 85);
+    final r = mh * .13;
+    final c = Offset(s.width * .76, seaTop - r * 2);
     canvas.drawCircle(
         c,
-        42,
+        r,
         Paint()
           ..shader = const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [C.goldBright, Color(0xFF7A5F28)])
-              .createShader(Rect.fromCircle(center: c, radius: 42)));
+              .createShader(Rect.fromCircle(center: c, radius: r)));
   }
 
   void _star(Canvas c, Offset o, double r, Paint p) {
@@ -143,7 +188,7 @@ class _EmblemPainter extends CustomPainter {
     final p = Paint()
       ..color = C.gold
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2;
+      ..strokeWidth = math.max(1.2, s.width / 95);
     canvas.drawRect(Rect.fromCenter(center: c, width: s.width * .72, height: s.width * .72), p);
     canvas.save();
     canvas.translate(c.dx, c.dy);
@@ -152,7 +197,7 @@ class _EmblemPainter extends CustomPainter {
         Rect.fromCenter(center: Offset.zero, width: s.width * .72, height: s.width * .72), p);
     canvas.restore();
     canvas.drawCircle(c, s.width * .32, p);
-    canvas.drawCircle(c, s.width * .30, p..strokeWidth = 1);
+    canvas.drawCircle(c, s.width * .30, p..strokeWidth = math.max(.6, s.width / 200));
   }
 
   @override
