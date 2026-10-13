@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/calendar_math.dart';
 import '../data/content.dart';
 import '../data/holidays.dart';
+import '../layout/layout.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/holiday_widgets.dart';
@@ -27,9 +28,17 @@ class MonthPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
     final blanks = leadingBlanks(planYear, month);
     final total = daysInMonth(planYear, month);
     final rows = ((blanks + total) / 7).ceil();
+    // Row height comes from MediaQuery via L, not from a LayoutBuilder: this
+    // page sits inside a SingleChildScrollView where LayoutBuilder reports
+    // unbounded height. Deriving from that would produce infinity.
+    final rowH = l.monthRowHeight(rows);
+    // Short rows cannot show a 3-6 line note field without overflowing the
+    // cell, so scale the note field down with the cell.
+    final noteMax = rowH >= 90 ? 6 : (rowH >= 70 ? 3 : 1);
 
     return PlannerPage(
       activeMonth: month,
@@ -40,7 +49,7 @@ class MonthPage extends StatelessWidget {
           titleAr: monthsAr[month - 1],
           subAr: toArabicDigits(planYear),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: l.gapL),
         Directionality(
           textDirection: TextDirection.ltr,
           child: Container(
@@ -48,7 +57,7 @@ class MonthPage extends StatelessWidget {
             child: Column(children: [
               Container(
                 color: C.navy,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: EdgeInsets.symmetric(vertical: l.gapS),
                 child: Row(children: [
                   for (var i = 0; i < 7; i++)
                     Expanded(
@@ -63,26 +72,30 @@ class MonthPage extends StatelessWidget {
                 ]),
               ),
               for (var r = 0; r < rows; r++)
-                IntrinsicHeight(
+                // Tight height rather than IntrinsicHeight: rows then share the
+                // viewport evenly and the whole month fits when it can.
+                SizedBox(
+                  height: rowH,
                   child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    for (var c = 0; c < 7; c++) _cell(context, r * 7 + c - blanks + 1, total, c),
+                    for (var c = 0; c < 7; c++)
+                      _cell(context, r * 7 + c - blanks + 1, total, c, noteMax),
                   ]),
                 ),
             ]),
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: l.gapXs),
         Text('Tap a date number to open that day. Tap a box to type in it.',
             style: T.sans(10, color: C.navy.withValues(alpha: .6))),
-        const SizedBox(height: 14),
+        SizedBox(height: l.gapM),
         HolidayList(month: month),
-        const SizedBox(height: 14),
+        SizedBox(height: l.gapM),
         WordCard(month: month),
       ]),
     );
   }
 
-  Widget _cell(BuildContext context, int day, int total, int col) {
+  Widget _cell(BuildContext context, int day, int total, int col, int noteMax) {
     final inMonth = day >= 1 && day <= total;
     final weekend = col >= 5;
     final date = DateTime(planYear, month, day);
@@ -93,7 +106,6 @@ class MonthPage extends StatelessWidget {
     final tint = isHol ? C.holiday : (isEv ? C.gold : null);
     return Expanded(
       child: Container(
-        constraints: const BoxConstraints(minHeight: 96),
         decoration: BoxDecoration(
           color: inMonth ? tint?.withValues(alpha: .12) : const Color(0xFFB5ADA0),
           border: Border.all(color: C.line, width: .5),
@@ -124,8 +136,8 @@ class MonthPage extends StatelessWidget {
                 Expanded(
                   child: EditableBox(
                     storeKey: 'day:${dateKey(date)}',
-                    minLines: 3,
-                    maxLines: 6,
+                    minLines: 1,
+                    maxLines: noteMax,
                     style: T.sans(10),
                   ),
                 ),
