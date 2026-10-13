@@ -63,6 +63,17 @@ async function main() {
     viewport: { width: 375, height: 667, deviceScaleFactor: 2 },
   });
 
+  // Warm-up: the first load compiles DDC modules and fetches fonts, and a
+  // screenshot taken during that window is blank. Do it once, throw it away.
+  {
+    const warm = await context.newPage();
+    await warm.goto(BASE, { waitUntil: 'domcontentloaded' });
+    await warm.evaluate(() => document.fonts.ready).catch(() => {});
+    await warm.waitForTimeout(7000);
+    await warm.close();
+    console.log('(warmed up)');
+  }
+
   for (const [name, [width, height]] of Object.entries(VIEWPORTS)) {
     console.log(`${name} ${width}x${height}`);
     const page = await context.newPage();
