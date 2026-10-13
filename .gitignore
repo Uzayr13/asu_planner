@@ -46,3 +46,9 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Responsive screenshot matrix output (tool/screenshot_matrix.mjs)
+shots/
+
+# tool/ node deps (screenshot tooling)
+tool/node_modules/
