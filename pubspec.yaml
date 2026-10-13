@@ -1,0 +1,27 @@
+name: asu_planner
+description: Bilingual (Arabic/English) digital planner 2027 - Arabic Speaking Union Mauritius
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.3
+  google_fonts: ^6.2.1
+  shared_preferences: ^2.2.3
+  audioplayers: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/words/
