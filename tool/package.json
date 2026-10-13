@@ -1,0 +1,12 @@
+{
+  "name": "asu-planner-tooling",
+  "private": true,
+  "description": "Dev-only helpers for asu_planner. Not part of the Flutter app.",
+  "type": "module",
+  "scripts": {
+    "shots": "node screenshot_matrix.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}
