@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/calendar_math.dart';
 import '../data/content.dart';
 import '../data/holidays.dart';
+import '../layout/layout.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/holiday_widgets.dart';
@@ -79,20 +80,32 @@ class WeekPage extends StatelessWidget {
               border: Border.all(color: C.line, width: 1.5),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Row(children: [
-              Expanded(
-                child: Text('ONE ARABIC WORD A DAY',
-                    style: T.sans(11, color: C.gold, w: FontWeight.w700, spacing: 1.5)),
-              ),
-              for (var i = 0; i < 7; i++)
-                Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: HabitDot(
-                    storeKey: habitKey(DateTime(monday.year, monday.month, monday.day + i)),
-                    label: 'MTWTFSS'[i],
+            // LayoutBuilder is safe for WIDTH here; only its height is
+            // unbounded inside the scroll view (see L docs).
+            child: LayoutBuilder(builder: (context, c) {
+              final l = L.of(context);
+              final dot = l.habitDotSize(c.maxWidth * .55);
+              final label = Text('ONE ARABIC WORD A DAY',
+                  style: T.sans(11, color: C.gold, w: FontWeight.w700, spacing: 1.5));
+              final dots = [
+                for (var i = 0; i < 7; i++)
+                  Padding(
+                    padding: EdgeInsets.only(left: l.gapS),
+                    child: HabitDot(
+                      storeKey: habitKey(DateTime(monday.year, monday.month, monday.day + i)),
+                      label: 'MTWTFSS'[i],
+                      size: dot,
+                    ),
                   ),
-                ),
-            ]),
+              ];
+              // Below 420pt of content the label wraps to three lines beside
+              // the dots — stack them instead.
+              return l.compactHabitStrip
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [label, SizedBox(height: l.gapS), Row(children: dots)])
+                  : Row(children: [Expanded(child: label), ...dots]);
+            }),
           ),
         ),
         const SizedBox(height: 6),
@@ -161,51 +174,62 @@ class _DayRow extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
-        height: 84,
         decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: C.line))),
         padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: active ? () => AppScope.of(context).openDay(date) : null,
-            child: SizedBox(
-              width: 62,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(daysEn[index][0] + daysEn[index].substring(1).toLowerCase(),
-                    style: T.sans(14, color: col, w: FontWeight.w700)),
-                Text('${date.day} ${monthsEn[date.month - 1].substring(0, 3)}',
-                    style: T.sans(10.5, color: C.navy.withValues(alpha: .6))),
-              ]),
-            ),
-          ),
-          Expanded(
-            child: active
-                ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    for (final h in hol) DayMark(text: h.en, color: C.holiday, size: 10),
-                    for (final e in evs) DayMark(text: e.en, color: C.gold, size: 10),
-                    Expanded(
-                      child: EditableBox(
-                        storeKey: 'day:${dateKey(date)}',
-                        minLines: 2,
-                        maxLines: 4,
-                        style: T.sans(11),
-                      ),
-                    ),
-                  ])
-                : Container(color: const Color(0xFFB5ADA0).withValues(alpha: .5)),
-          ),
-          SizedBox(
-            width: 70,
-            child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text(daysAr[index],
-                  textDirection: TextDirection.rtl,
-                  style: T.ar(14, color: col, w: FontWeight.w700)),
-              Text(toArabicDigits(date.day),
-                  textDirection: TextDirection.rtl,
-                  style: T.ar(11, color: C.navy.withValues(alpha: .6))),
+        // Min-height, not a fixed 84: a day carrying holidays and events used
+        // to RenderFlex-overflow the row. IntrinsicHeight lets the row grow
+        // with its content and with the system text scale.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 84),
+          child: IntrinsicHeight(
+            child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: active ? () => AppScope.of(context).openDay(date) : null,
+                child: SizedBox(
+                  width: 62,
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(daysEn[index][0] + daysEn[index].substring(1).toLowerCase(),
+                            style: T.sans(14, color: col, w: FontWeight.w700)),
+                        Text('${date.day} ${monthsEn[date.month - 1].substring(0, 3)}',
+                            style: T.sans(10.5, color: C.navy.withValues(alpha: .6))),
+                      ]),
+                ),
+              ),
+              Expanded(
+                child: active
+                    ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        for (final h in hol) DayMark(text: h.en, color: C.holiday, size: 10),
+                        for (final e in evs) DayMark(text: e.en, color: C.gold, size: 10),
+                        EditableBox(
+                          storeKey: 'day:${dateKey(date)}',
+                          minLines: 2,
+                          maxLines: 4,
+                          style: T.sans(11),
+                        ),
+                      ])
+                    : Container(color: const Color(0xFFB5ADA0).withValues(alpha: .5)),
+              ),
+              SizedBox(
+                width: 70,
+                child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(daysAr[index],
+                          textDirection: TextDirection.rtl,
+                          style: T.ar(14, color: col, w: FontWeight.w700)),
+                      Text(toArabicDigits(date.day),
+                          textDirection: TextDirection.rtl,
+                          style: T.ar(11, color: C.navy.withValues(alpha: .6))),
+                    ]),
+              ),
             ]),
           ),
-        ]),
+        ),
       ),
     );
   }
