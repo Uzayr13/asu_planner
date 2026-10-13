@@ -24,8 +24,9 @@ class NotesPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         for (var i = 0; i < lines; i++)
+          // Min-height, not a fixed 40: ruled lines grow with system text scale.
           Container(
-            height: 40,
+            constraints: const BoxConstraints(minHeight: 40),
             decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: C.line, width: .8))),
             child: EditableBox(
               storeKey: 'note:$index:$i',
