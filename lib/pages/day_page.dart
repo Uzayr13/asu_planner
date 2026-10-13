@@ -109,8 +109,10 @@ class DayPage extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Column(children: [
             for (var h = firstHour; h <= lastHour; h++)
+              // Min-height, not a fixed 46: rows must grow with system text
+              // scale instead of clipping the note field.
               Container(
-                height: 46,
+                constraints: const BoxConstraints(minHeight: 46),
                 decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: C.line, width: .8))),
                 child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                   SizedBox(
