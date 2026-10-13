@@ -309,11 +309,19 @@ class WordCard extends StatelessWidget {
             ]),
           ),
           if (w != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(w.ar,
-                  textDirection: TextDirection.rtl,
-                  style: T.arDisplay(compact ? 40 : 64, color: C.goldBright)),
+            // Flexible + FittedBox: the Arabic glyph is wide and has no flex of
+            // its own, so at 320pt it used to push past the Row and overflow.
+            // Scale it down to whatever width is left instead.
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(w.ar,
+                      textDirection: TextDirection.rtl,
+                      style: T.arDisplay(compact ? 40 : 64, color: C.goldBright)),
+                ),
+              ),
             ),
         ]),
       ),

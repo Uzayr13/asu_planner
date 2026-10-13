@@ -1,7 +1,7 @@
 name: asu_planner
 description: Bilingual (Arabic/English) digital planner 2027 - Arabic Speaking Union Mauritius
 publish_to: "none"
-version: 0.2.5+9
+version: 0.2.6+10
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
