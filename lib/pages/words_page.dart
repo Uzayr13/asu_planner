@@ -44,23 +44,27 @@ class WordsPage extends StatelessWidget {
                 ]),
               ),
               for (var r = 0; r < rows; r++)
-                SizedBox(
-                  height: 52,
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    for (var c = 0; c < 4; c++)
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(border: Border.all(color: C.line, width: .5)),
-                          child: EditableBox(
-                            storeKey: 'word:$r:$c',
-                            maxLines: 2,
-                            textDirection: c == 0 ? TextDirection.rtl : null,
-                            style: c == 0 ? T.ar(15) : T.sans(11),
-                            padding: const EdgeInsets.all(8),
+                // Min-height plus IntrinsicHeight: a vocab row must grow with
+                // system text scale rather than clip the cell.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 52),
+                  child: IntrinsicHeight(
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      for (var c = 0; c < 4; c++)
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(border: Border.all(color: C.line, width: .5)),
+                            child: EditableBox(
+                              storeKey: 'word:$r:$c',
+                              maxLines: 2,
+                              textDirection: c == 0 ? TextDirection.rtl : null,
+                              style: c == 0 ? T.ar(15) : T.sans(11),
+                              padding: const EdgeInsets.all(8),
+                            ),
                           ),
                         ),
-                      ),
-                  ]),
+                    ]),
+                  ),
                 ),
             ]),
           ),
