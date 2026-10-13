@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/calendar_math.dart';
 import '../data/content.dart';
 import '../data/holidays.dart';
+import '../layout/layout.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/holiday_widgets.dart';
@@ -41,7 +42,10 @@ class YearPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         LayoutBuilder(builder: (context, c) {
-          final cols = c.maxWidth > 700 ? 4 : 3;
+          // 2 columns on xs: at 320pt with 3 columns a day cell is ~12pt wide,
+          // too small for a readable marker. Fluid marker scaling alone is not
+          // enough — the column count has to drop too.
+          final cols = L.of(context).yearCols;
           return Wrap(
             spacing: 14,
             runSpacing: 18,
@@ -69,25 +73,33 @@ class MiniMonth extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final blanks = leadingBlanks(planYear, month);
-    final total = daysInMonth(planYear, month);
-    final cells = <Widget>[];
-    for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S']) {
-      cells.add(Center(child: Text(d, style: T.sans(8, color: C.navy.withValues(alpha: .6), w: FontWeight.w700))));
-    }
-    for (var i = 0; i < blanks; i++) {
-      cells.add(const SizedBox());
-    }
-    for (var day = 1; day <= total; day++) {
-      final col = (blanks + day - 1) % 7;
-      final weekend = col >= 5;
-      final d = DateTime(planYear, month, day);
-      final ev = isEventDay(d);
-      final hol = isHoliday(d);
-      cells.add(Center(
-        child: Container(
-          width: 18,
-          height: 18,
+    // LayoutBuilder for WIDTH only — safe inside the scroll view, unlike its
+    // height (see L docs). The marker must track the cell or it overflows:
+    // at 375pt a 7-wide cell is ~14.6pt and the old marker was a fixed 18.
+    return LayoutBuilder(builder: (context, c) {
+      final l = L.of(context);
+      final marker = l.miniMarker(c.maxWidth / 7);
+      final blanks = leadingBlanks(planYear, month);
+      final total = daysInMonth(planYear, month);
+      final cells = <Widget>[];
+      for (final d in const ['M', 'T', 'W', 'T', 'F', 'S', 'S']) {
+        cells.add(Center(
+            child: Text(d,
+                style: T.sans(8, color: C.navy.withValues(alpha: .6), w: FontWeight.w700))));
+      }
+      for (var i = 0; i < blanks; i++) {
+        cells.add(const SizedBox());
+      }
+      for (var day = 1; day <= total; day++) {
+        final col = (blanks + day - 1) % 7;
+        final weekend = col >= 5;
+        final d = DateTime(planYear, month, day);
+        final ev = isEventDay(d);
+        final hol = isHoliday(d);
+        cells.add(Center(
+          child: Container(
+            width: marker,
+            height: marker,
           alignment: Alignment.center,
           decoration: ev
               ? const BoxDecoration(color: C.gold, shape: BoxShape.circle)
@@ -96,33 +108,34 @@ class MiniMonth extends StatelessWidget {
                       shape: BoxShape.circle, border: Border.all(color: C.holiday, width: 1.3))
                   : null),
           child: Text('$day',
-              style: T.sans(9.5,
+              style: T.sans(marker * .55,
                   color: ev ? Colors.white : (hol ? C.holiday : (weekend ? C.gold : C.navy)),
                   w: (ev || hol) ? FontWeight.w700 : FontWeight.w400)),
         ),
       ));
     }
-    return GestureDetector(
-      onTap: () => AppScope.of(context).openMonth(month, switchToMonthView: true),
-      behavior: HitTestBehavior.opaque,
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(monthsEn[month - 1], style: T.serif(14)),
-            Text(monthsAr[month - 1], textDirection: TextDirection.rtl, style: T.arDisplay(14)),
+      return GestureDetector(
+        onTap: () => AppScope.of(context).openMonth(month, switchToMonthView: true),
+        behavior: HitTestBehavior.opaque,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(monthsEn[month - 1], style: T.serif(14)),
+              Text(monthsAr[month - 1], textDirection: TextDirection.rtl, style: T.arDisplay(14)),
+            ]),
+            Container(height: 1.5, color: C.gold, margin: const EdgeInsets.symmetric(vertical: 4)),
+            GridView.count(
+              crossAxisCount: 7,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.15,
+              children: cells,
+            ),
           ]),
-          Container(height: 1.5, color: C.gold, margin: const EdgeInsets.symmetric(vertical: 4)),
-          GridView.count(
-            crossAxisCount: 7,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.15,
-            children: cells,
-          ),
-        ]),
-      ),
-    );
+        ),
+      );
+    });
   }
 }
 
