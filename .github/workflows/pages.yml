@@ -32,7 +32,7 @@ jobs:
       - run: flutter pub get
       - run: flutter test
       # Project site base href: https://<owner>.github.io/<repo>/
-      - run: zsh tool/build_web.sh /${{ github.event.repository.name }}/
+      - run: sh tool/build_web.sh /${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
