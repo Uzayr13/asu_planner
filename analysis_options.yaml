@@ -10,14 +10,13 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  # Generated native sources only. iOS, macOS and Linux runners were removed —
+  # Apple platforms ship as a web app, Linux is out of scope.
   exclude:
     - build/**
     - android/**
-    - ios/**
     - web/**
-    - macos/**
     - windows/**
-    - linux/**
 
 linter:
   # The lint rules applied to this project can be customized in the
