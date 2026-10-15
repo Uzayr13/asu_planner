@@ -1,0 +1,16 @@
+# Android release signing — template.
+#
+# Copy to android/key.properties (which is gitignored) and fill in real values.
+# Without this file a release build falls back to the DEBUG keystore and the
+# APK is only fit for local testing, not for handing to users.
+#
+# Generate a keystore once and store it somewhere safe OUTSIDE the repo — it
+# cannot be recovered if lost, and every future release needs it:
+#
+#   keytool -genkeypair -v -keystore ~/asu-planner-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias asu-planner
+#
+storePassword=
+keyPassword=
+keyAlias=asu-planner
+storeFile=/Users/you/asu-planner-release.jks
