@@ -1,4 +1,4 @@
-package com.example.asu_planner
+package mu.org.asu.planner
 
 import io.flutter.embedding.android.FlutterActivity
 
