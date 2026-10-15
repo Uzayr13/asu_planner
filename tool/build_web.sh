@@ -1,7 +1,9 @@
-#!/bin/zsh
+#!/bin/sh
 # Canonical release build for the web target.
 #
-# Run from the repo root:  zsh tool/build_web.sh
+# Run from the repo root:  sh tool/build_web.sh
+#
+# POSIX sh on purpose — GitHub's ubuntu runners have no zsh.
 #
 # The --no-web-resources-cdn flag is load-bearing, not cosmetic. By default
 # Flutter fetches CanvasKit (the web renderer) from www.gstatic.com at runtime.

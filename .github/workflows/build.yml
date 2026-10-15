@@ -53,7 +53,7 @@ jobs:
       # tool/build_web.sh passes --no-web-resources-cdn so the build is
       # self-contained. The default fetches CanvasKit from gstatic, which
       # renders a blank page wherever that host is unreachable.
-      - run: zsh tool/build_web.sh /${{ github.event.repository.name }}/
+      - run: sh tool/build_web.sh /${{ github.event.repository.name }}/
       - uses: actions/upload-artifact@v4
         with:
           name: web
