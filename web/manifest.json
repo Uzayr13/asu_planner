@@ -1,11 +1,11 @@
 {
-    "name": "asu_planner",
-    "short_name": "asu_planner",
+    "name": "ASU Planner 2027",
+    "short_name": "ASU Planner",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#E8E4D6",
+    "theme_color": "#12223F",
+    "description": "Bilingual Arabic/English digital planner 2027 for the Arabic Speaking Union, Mauritius.",
     "orientation": "any",
     "prefer_related_applications": false,
     "icons": [

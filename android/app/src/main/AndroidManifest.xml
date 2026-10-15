@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="asu_planner"
+        android:label="ASU Planner 2027"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
