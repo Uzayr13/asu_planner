@@ -36,22 +36,27 @@ class CoverPage extends StatelessWidget {
 
             return Column(children: [
               const Spacer(flex: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  SizedBox(
-                    width: emblem,
-                    height: emblem,
-                    child: Stack(alignment: Alignment.center, children: [
-                      CustomPaint(
-                          size: Size.square(emblem), painter: _EmblemPainter()),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text('٢٠٢٧',
-                            style: T.arDisplay(52, color: C.goldBright)),
-                      ),
-                    ]),
-                  ),
+              // Flexible, not bare: a non-flex Column child gets unbounded
+              // height, so this FittedBox had nothing to shrink to and the
+              // cover overflowed the bottom at 2x text on short viewports.
+              Flexible(
+                flex: 4,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    SizedBox(
+                      width: emblem,
+                      height: emblem,
+                      child: Stack(alignment: Alignment.center, children: [
+                        CustomPaint(
+                            size: Size.square(emblem), painter: _EmblemPainter()),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text('٢٠٢٧',
+                              style: T.arDisplay(52, color: C.goldBright)),
+                        ),
+                      ]),
+                    ),
                   SizedBox(height: short ? l.gapL : l.gapXl + G.s),
                   Text('المفكرة الرقمية',
                       textDirection: TextDirection.rtl,
@@ -65,7 +70,8 @@ class CoverPage extends StatelessWidget {
                   SizedBox(height: l.gapS),
                   Text('Arabic · English',
                       style: T.sans(12, color: Colors.white54, spacing: 2)),
-                ]),
+                  ]),
+                ),
               ),
               const Spacer(flex: 2),
               // Hint and footer are chrome, not content: clamp their text

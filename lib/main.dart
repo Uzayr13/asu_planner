@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'pages/cover_page.dart';
 import 'pages/day_page.dart';
@@ -15,6 +16,11 @@ import 'widgets/common.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Fonts are bundled under assets/fonts and declared in pubspec.yaml. Without
+  // this flag google_fonts fetches from fonts.gstatic.com at runtime, which
+  // fails in a sandbox with no network entitlement and on an offline device —
+  // Arabic then renders as tofu boxes.
+  GoogleFonts.config.allowRuntimeFetching = false;
   final store = await Store.open();
   runApp(PlannerApp(store: store));
 }
