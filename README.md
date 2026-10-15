@@ -69,8 +69,27 @@ file the build falls back to debug signing and is for local testing only.
 
 `.github/workflows/build.yml` builds web, Android and Windows on every push and
 runs the tests first. Windows can only be compiled on a Windows runner, so CI
-is the only place it is proven. `.github/workflows/pages.yml` publishes the web
-build to GitHub Pages — enable it once under Settings → Pages → Source.
+is the only place it is proven. Each green run attaches the three artifacts
+(`web`, `android-apk`, `windows-zip`), downloadable from the run's Artifacts
+section for 90 days.
+
+### Hosting the web build privately
+
+The build is a static folder — `build/web` — with **zero external requests**, so
+it can go anywhere you control. GitHub Pages is deliberately **not** used: a
+`github.io` URL is public regardless of this repo being private, and the planner
+content is ASU's. Private options:
+
+- **Any static host behind auth** — nginx, Caddy or a NAS on a LAN or VPN.
+  Serve `build/web` as the document root.
+- **Netlify / Cloudflare Access** — password-protect or gate the site behind
+  your team's login. Free tiers cover both.
+- **A private server** — `python3 -m http.server 8080 --directory build/web` is
+  enough for a trusted network.
+
+Whatever you pick, the base href must match where it is served. Build with
+`sh tool/build_web.sh /` for a domain root, or `sh tool/build_web.sh /some/path/`
+for a subpath.
 
 ## Reverting
 
