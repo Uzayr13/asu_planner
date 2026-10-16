@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'backup/backup.dart';
+
 /// Tiny key/value store for all user-entered text and toggles.
 ///
 /// Keys, exactly as the pages construct them (see `dateKey` in
@@ -48,9 +50,12 @@ class Store extends ChangeNotifier {
   /// Only `String` and `bool` values are included; anything else is skipped
   /// rather than cast, so a stray non-plannable entry can never poison an
   /// export. Empty text is already absent — `setText('')` removes the key.
+  /// Reserved `backup:*` keys are excluded so an export never contains the
+  /// snapshot of another export.
   Map<String, Object> dump() {
     final out = <String, Object>{};
     for (final key in _p.getKeys()) {
+      if (key.startsWith(kBackupKeyPrefix)) continue;
       final v = _p.get(key);
       // Separate branches so Dart promotes each to a non-nullable Object;
       // `v is String || v is bool` promotes to neither.
@@ -65,13 +70,17 @@ class Store extends ChangeNotifier {
 
   /// Write [values], dispatching on each value's runtime type.
   ///
-  /// Goes through [setText]/[setFlag] so the remove-on-empty rule stays
-  /// consistent. Notifies once at the end rather than per key, so a large
-  /// import does not thrash every listening widget.
+  /// Writes go straight to SharedPreferences and notify **once** at the end,
+  /// not per key — a full-year import is thousands of keys and notifying
+  /// per key would rebuild every open page in a loop.
+  ///
+  /// With [exact], keys not present in [values] are deleted, so the result
+  /// matches [values] exactly. Without it the write merges: keys the map does
+  /// not mention are left alone.
   ///
   /// Values that are neither `String` nor `bool` are ignored, not cast —
   /// a hand-edited backup must not crash the app.
-  Future<void> applyAll(Map<String, Object> values) async {
+  Future<void> applyAll(Map<String, Object> values, {bool exact = false}) async {
     for (final entry in values.entries) {
       final v = entry.value;
       if (v is bool) {
@@ -84,6 +93,62 @@ class Store extends ChangeNotifier {
         }
       }
     }
+    if (exact) {
+      for (final key in _p.getKeys().toList()) {
+        if (key.startsWith(kBackupKeyPrefix)) continue;
+        if (!values.containsKey(key)) await _p.remove(key);
+      }
+    }
     notifyListeners();
+  }
+
+  // ---- pre-import snapshot -------------------------------------------------
+  //
+  // One slot, held inside SharedPreferences under a reserved key so it
+  // survives the same storage the notes do. It is the undo for a bad merge.
+
+  /// When the current snapshot was taken, or null if there is none.
+  DateTime? snapshotCreatedAt() {
+    final json = _p.getString(kBackupSnapshotKey);
+    if (json == null) return null;
+    try {
+      return decodeBackup(json).createdAt;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Replace the snapshot with the notes as they are right now.
+  ///
+  /// Returns false if the write failed (for example browser storage is full) —
+  /// a caller must then **abort** rather than merge without a way back.
+  Future<bool> saveSnapshot() async {
+    try {
+      final json = encodeBackup(dump());
+      await _p.setString(kBackupSnapshotKey, json);
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Restore the notes to exactly what the snapshot holds, and make the state
+  /// being replaced the new snapshot — so tapping restore again undoes it.
+  ///
+  /// Returns false when there is no snapshot or it cannot be read.
+  Future<bool> restoreSnapshot() async {
+    final json = _p.getString(kBackupSnapshotKey);
+    if (json == null) return false;
+    try {
+      final snapshot = decodeBackup(json);
+      final current = encodeBackup(dump());
+      await applyAll(snapshot.notes, exact: true);
+      await _p.setString(kBackupSnapshotKey, current);
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }
