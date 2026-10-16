@@ -124,13 +124,16 @@ lib/
   main.dart               app shell, cover, bottom view bar (Year/Month/Week/Day/Notes/Words)
   theme.dart              colours + fonts (Playfair / Lato / Amiri / Noto Naskh)
   store.dart              shared_preferences autosave (all user text + toggles)
+  layout/layout.dart      the one authority for breakpoints, spacing and row heights
+  backup/backup.dart      pure-Dart JSON encode / decode / merge for notes
+  backup/backup_io.dart   the thin file-picker edge
   data/content.dart       months, days, the 12 Words of the Month, ASU events
   data/holidays.dart      Mauritius public holidays 2027
   audio/word_audio.dart   "Hear now" playback (looks for recordings in assets/audio/words)
   widgets/holiday_widgets.dart  holiday list card + day labels
   data/calendar_math.dart Monday-first grid, ISO weeks, 53 planner weeks
   widgets/common.dart     tabs, footer, headers, EditableBox, WordCard
-  pages/                  cover, year, month, week, day, notes, words
+  pages/                  cover, year, month, week, day, notes, words, settings sheet
 ```
 
 ## Views (2027 only)
@@ -162,13 +165,47 @@ Each word card has a **Hear now / استمع** button. Add recordings to
 `assets/audio/words/` named `01.mp3` ... `12.mp3` (see the README.txt there).
 No code change is needed: until a file exists the button says "Recording coming soon".
 
+## Backup and restore
+
+The gear on the bottom view bar opens Settings. From there you can move notes
+between devices or keep a copy safe.
+
+**To move to a new device**
+
+1. Old device: **Export my notes** → save the `.json` somewhere both devices can
+   reach (Drive, email it to yourself, USB).
+2. New device: open or install the app → **Import from a file** → pick that file.
+
+Every note travels: day notes, both notes pages, the vocabulary table, week and
+day priorities, the schedule, habit dots and checkboxes. The same file works
+across platforms — export from the Android APK and import into the web app.
+
+**What import does**
+
+Importing **merges**, it never wipes the device. Where both have a note for the
+same key, the **backup wins**. Anything the device has that the file does not
+mention is left alone. Before anything is written, a snapshot of the current
+notes is kept and the app tells you what will change ("12 to add · 3 to
+replace").
+
+**If an import goes wrong**
+
+**Restore snapshot** puts things back. It is a swap: restoring makes the state
+it replaced the new snapshot, so tapping restore again undoes the restore.
+Note the slot is one-deep — a second import overwrites it. For a permanent copy
+keep the exported `.json` file, which is why the sheet says to export before
+importing.
+
+**Not automatic sync.** Export copies the data at that moment; it does not link
+devices. If you re-import an old file later, it overwrites whatever you changed
+since. The habit that avoids surprises: export just before you switch, import
+just after.
+
 ## Known gaps / next steps
 
-- **No export or backup.** Notes live in on-device storage (`shared_preferences`
-  → browser `localStorage` on web, app storage on Android). Clearing site data
-  or switching devices loses everything. PDF export and backup/sync are
-  Phase 2 in the spec — before a year of daily use, export is the feature that
-  matters most.
+- **No automatic sync.** Notes are local; moving devices means export then
+  import (see Backup and restore). PDF export and cloud sync remain Phase 2 in
+  the spec.
 - **Word of the Month:** all 12 are filled in from the design reference. Have the
   ASU team proof-read the Arabic diacritics and notes in `lib/data/content.dart`.
 - **Eid-Ul-Fitr (10 Mar 2027) is provisional** (moon sighting) and the Arabic
