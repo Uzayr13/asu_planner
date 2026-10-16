@@ -265,9 +265,19 @@ class _EditableBoxState extends State<EditableBox> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final text = StoreScope.of(context).text(widget.storeKey);
     if (!_init) {
-      _c = TextEditingController(text: StoreScope.of(context).text(widget.storeKey));
+      _c = TextEditingController(text: text);
       _init = true;
+    } else if (_c.text != text) {
+      // Something other than this field wrote the store — a backup import or
+      // a snapshot restore. Without this the controller keeps showing the
+      // pre-import text forever. No-op while typing, because onChanged has
+      // already written the same value back to the store.
+      _c.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
     }
   }
 
