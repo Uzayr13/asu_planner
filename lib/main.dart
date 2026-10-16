@@ -6,6 +6,7 @@ import 'pages/cover_page.dart';
 import 'pages/day_page.dart';
 import 'pages/month_page.dart';
 import 'pages/notes_page.dart';
+import 'pages/settings_sheet.dart';
 import 'pages/week_page.dart';
 import 'pages/words_page.dart';
 import 'pages/year_page.dart';
@@ -171,6 +172,27 @@ class _ViewBar extends StatelessWidget {
                   ),
                 ),
               ),
+            // Fixed-width trailing slot, not a seventh Expanded tab: the six
+            // bilingual tabs keep their widths and nothing crowds them. Icon
+            // only, so there is no label to clip at narrow widths.
+            SizedBox(
+              width: 48,
+              child: Semantics(
+                button: true,
+                label: 'Settings',
+                child: InkWell(
+                  onTap: () => SettingsSheet.open(context),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.4,
+                      child:
+                          const Icon(Icons.settings_rounded, size: 22, color: Colors.white54),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ]),
         ),
       ),
