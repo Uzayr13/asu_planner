@@ -74,6 +74,14 @@ void main() {
           throwsA(isA<BackupFormatException>()));
     });
 
+    test('rejects a file trying to write reserved backup keys', () {
+      expect(
+          () => decodeBackup(
+              '{"formatVersion": 1, "notes": {"backup:snapshot": "forged"}}'),
+          throwsA(predicate((e) =>
+              e is BackupFormatException && e.message.contains('reserved'))));
+    });
+
     test('reports the offending key so a user can find it', () {
       expect(
           () => decodeBackup('{"formatVersion": 1, "notes": {"bad:1": 42}}'),
@@ -205,6 +213,71 @@ void main() {
       expect(device.text('day:2027-01-04'), 'device only', reason: 'kept');
       expect(device.text('day:2027-01-05'), 'from backup', reason: 'backup wins');
       expect(device.text('day:2027-01-06'), 'brand new', reason: 'added');
+    });
+  });
+
+  group('snapshot — the undo for a bad merge', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    test('dump never exposes the snapshot itself', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'real note');
+      await s.saveSnapshot();
+      expect(s.dump().keys.any((k) => k.startsWith(kBackupKeyPrefix)), isFalse,
+          reason: 'an export must not contain the snapshot of another export');
+      expect(s.snapshotCreatedAt(), isNotNull);
+    });
+
+    test('restore brings the notes back exactly', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'original');
+      await s.setFlag('habit:2026-12-28:0', true);
+      await s.saveSnapshot();
+      final saved = s.dump();
+
+      await s.applyAll({'day:2027-01-04': 'imported junk', 'day:2027-01-09': 'extra'},
+          exact: true);
+      expect(s.text('day:2027-01-04'), 'imported junk');
+
+      expect(await s.restoreSnapshot(), isTrue);
+      expect(s.dump(), equals(saved));
+    });
+
+    test('restore swaps: doing it again undoes the restore', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'before');
+      await s.saveSnapshot();
+
+      await s.applyAll({'day:2027-01-04': 'after'}, exact: true);
+      final afterImport = s.dump();
+
+      expect(await s.restoreSnapshot(), isTrue);
+      expect(s.text('day:2027-01-04'), 'before', reason: 'first restore undoes');
+
+      expect(await s.restoreSnapshot(), isTrue);
+      expect(s.dump(), equals(afterImport), reason: 'second restore redoes');
+    });
+
+    test('restore is a no-op with nothing saved', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'note');
+      expect(await s.restoreSnapshot(), isFalse);
+      expect(s.text('day:2027-01-04'), 'note', reason: 'nothing was touched');
+    });
+
+    test('applyAll(exact) removes keys the map does not mention', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'keep');
+      await s.setText('day:2027-01-05', 'drop');
+      await s.applyAll({'day:2027-01-04': 'keep'}, exact: true);
+      expect(s.dump().keys.toSet(), {'day:2027-01-04'});
+    });
+
+    test('applyAll without exact leaves keys alone', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-05', 'untouched');
+      await s.applyAll({'day:2027-01-04': 'new'});
+      expect(s.dump().keys.toSet(), {'day:2027-01-05', 'day:2027-01-04'});
     });
   });
 }

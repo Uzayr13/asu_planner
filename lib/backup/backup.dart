@@ -23,6 +23,15 @@ import 'dart:convert';
 /// Version of the on-disk format. Bump when the shape changes incompatibly.
 const int backupFormatVersion = 1;
 
+/// Key prefix reserved for the app's own backup machinery inside the store.
+///
+/// Keys under this prefix are never part of a note export — otherwise an
+/// export would contain the snapshot of an earlier export.
+const String kBackupKeyPrefix = 'backup:';
+
+/// Where the pre-import snapshot lives.
+const String kBackupSnapshotKey = '${kBackupKeyPrefix}snapshot';
+
 /// A parsed backup file.
 class Backup {
   const Backup({
@@ -128,6 +137,10 @@ Backup decodeBackup(String json) {
 
   final notes = <String, Object>{};
   for (final entry in raw.entries) {
+    if (entry.key.startsWith(kBackupKeyPrefix)) {
+      throw BackupFormatException(
+          'Key "${entry.key}" is reserved for the app\'s own backup data and cannot be imported.');
+    }
     final v = entry.value;
     if (v is String) {
       // Empty means "no note" — see the class doc. Never emit, never apply.
