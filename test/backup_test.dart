@@ -90,6 +90,12 @@ void main() {
               e is BackupFormatException && e.message.contains('reserved'))));
     });
 
+    test('rejects a file larger than the cap before parsing it', () {
+      final huge = '{"formatVersion": 1, "notes": {"k": "${'x' * kBackupMaxChars}"}}';
+      expect(() => decodeBackup(huge), throwsA(isA<BackupFormatException>()),
+          reason: 'a corrupt or hostile file must not make the app parse megabytes');
+    });
+
     test('reports the offending key so a user can find it', () {
       expect(
           () => decodeBackup('{"formatVersion": 1, "notes": {"bad:1": 42}}'),

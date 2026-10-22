@@ -32,6 +32,14 @@ const String kBackupKeyPrefix = 'backup:';
 /// Where the pre-import snapshot lives.
 const String kBackupSnapshotKey = '${kBackupKeyPrefix}snapshot';
 
+/// Longest backup we will even attempt to parse.
+///
+/// A full year is a few hundred keys and tens of kilobytes; this is orders of
+/// magnitude above that. It exists so a corrupt or hostile file cannot make the
+/// app chew through megabytes of JSON, and so an import cannot bloat browser
+/// storage with junk values.
+const int kBackupMaxChars = 2 * 1024 * 1024;
+
 /// Key prefix reserved for UI state (which notices have been dismissed).
 ///
 /// Also excluded from exports and rejected on import. Otherwise a backup
@@ -118,6 +126,10 @@ String encodeBackup(Map<String, Object> notes, {DateTime? createdAt}) {
 /// Validation happens entirely before this returns, so a caller can never see
 /// a half-valid [Backup] and a corrupt file is rejected whole.
 Backup decodeBackup(String json) {
+  if (json.length > kBackupMaxChars) {
+    throw BackupFormatException(
+        'File is too large to be a planner backup (${json.length} characters).');
+  }
   Object? root;
   try {
     root = jsonDecode(json);
