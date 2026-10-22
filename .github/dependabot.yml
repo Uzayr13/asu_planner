@@ -1,0 +1,19 @@
+# Keeps the small dependency set current, and opens PRs for it.
+#
+# The app deliberately has few dependencies - intl, google_fonts,
+# shared_preferences, audioplayers, file_picker, url_launcher - so review load
+# is light. GitHub Actions matter as much as pub here: a stale
+# actions/checkout or upload-artifact is what usually breaks a workflow.
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
