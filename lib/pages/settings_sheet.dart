@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../backup/backup.dart';
 import '../backup/backup_io.dart';
@@ -114,6 +116,42 @@ class SettingsSheet extends StatelessWidget {
                 SizedBox(height: l.gapM),
                 const Divider(height: 1, color: C.line),
                 SizedBox(height: l.gapM),
+                Text('Get the app · تحميل التطبيق',
+                    style: T.sans(11, color: C.navy.withValues(alpha: .65))),
+                SizedBox(height: l.gapXs),
+                _ActionRow(
+                  icon: Icons.android_rounded,
+                  en: 'Android app (APK)',
+                  ar: 'تطبيق أندرويد',
+                  onTap: () => _open(context, _androidUrl),
+                ),
+                _ActionRow(
+                  icon: Icons.laptop_windows_rounded,
+                  en: 'Windows app (zip)',
+                  ar: 'تطبيق ويندوز',
+                  onTap: () => _open(context, _windowsUrl),
+                ),
+                _ActionRow(
+                  icon: Icons.add_to_home_screen_rounded,
+                  en: 'Add to Home Screen',
+                  ar: 'إضافة إلى الشاشة الرئيسية',
+                  onTap: () => _homeScreenHelp(context),
+                ),
+                SizedBox(height: l.gapS),
+                Text(
+                  'iOS and macOS use this web app — there is no separate install. '
+                  'The links open the latest build on GitHub Releases.',
+                  style: T.sans(11, color: C.navy.withValues(alpha: .65)),
+                ),
+                SizedBox(height: l.gapXs),
+                Text(
+                  'تستخدم iOS وmacOS هذا التطبيق عبر المتصفح. الروابط تفتح أحدث إصدار.',
+                  textDirection: TextDirection.rtl,
+                  style: T.ar(11, color: C.navy.withValues(alpha: .65)),
+                ),
+                SizedBox(height: l.gapM),
+                const Divider(height: 1, color: C.line),
+                SizedBox(height: l.gapM),
                 Text(
                   'Importing merges the backup into this device; the backup wins on conflicts. '
                   'A snapshot of current notes is kept so a bad import can be undone. '
@@ -204,6 +242,55 @@ class SettingsSheet extends StatelessWidget {
             : 'Could not restore · تعذر الاستعادة'),
         duration: const Duration(seconds: 2),
       ));
+  }
+
+  // ---- get the app ----------------------------------------------------------
+
+  // `releases/latest/download/<asset>` always resolves to the newest release,
+  // so these links never rot as long as the CI release job keeps publishing.
+  static const _repo = 'https://github.com/Uzayr13/asu_planner';
+  static const _androidUrl = '$_repo/releases/latest/download/app-release.apk';
+  static const _windowsUrl = '$_repo/releases/latest/download/windows.zip';
+
+  static Future<void> _open(BuildContext context, String url) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await launchUrl(Uri.parse(url), webOnlyWindowName: '_blank');
+    if (!context.mounted) return;
+    if (!ok) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+          content: Text('Could not open the link · تعذر فتح الرابط'),
+          duration: Duration(seconds: 2),
+        ));
+    }
+  }
+
+  /// iOS never prompts for install, so the gesture has to be explained.
+  static void _homeScreenHelp(BuildContext context) {
+    final isApple =
+        defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: C.paper,
+        title: Text(isApple ? 'Add to Home Screen' : 'Install this app'),
+        content: Text(
+          isApple
+              ? 'Open the Share menu in your browser, then choose '
+                  '"Add to Home Screen". This keeps your notes — Safari '
+                  'clears website data after a week in a normal tab.'
+              : 'Use the Install option in your browser bar, or download the '
+                  'app from the rows above.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Show what an import would do, and offer to back up first.
