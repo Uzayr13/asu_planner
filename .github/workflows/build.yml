@@ -156,7 +156,7 @@ jobs:
           cp artifacts/windows-zip/asu-planner-windows.zip dist/windows.zip
           ls -la dist
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             dist/app-release.apk
