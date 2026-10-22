@@ -194,10 +194,14 @@ class SectionHeader extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(titleEn, style: T.serif(size)),
               ),
-              Text(subEn,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
+              // Scale rather than ellipsise: at 320pt the wide tracking turned
+              // "I LEARNED IN 2027" into "I LEARNED IN 20...".
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(subEn,
+                    style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
+              ),
             ]),
           ),
           Flexible(
@@ -324,10 +328,17 @@ class WordCard extends StatelessWidget {
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Row(children: [
+          // 3:2 rather than equal halves — the label column was starving and
+          // 'WORD OF THE MONTH' wrapped to three cramped lines in the compact
+          // variant on the Week view.
           Expanded(
+            flex: 3,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('WORD OF THE MONTH',
-                  style: T.sans(10, color: C.goldBright, w: FontWeight.w700, spacing: 2)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.sans(compact ? 9 : 10,
+                      color: C.goldBright, w: FontWeight.w700, spacing: compact ? 1 : 2)),
               const SizedBox(height: 6),
               if (w == null)
                 Text('Coming soon', style: T.serif(compact ? 14 : 22, color: Colors.white54))
@@ -353,13 +364,15 @@ class WordCard extends StatelessWidget {
             // its own, so at 320pt it used to push past the Row and overflow.
             // Scale it down to whatever width is left instead.
             Flexible(
+              flex: 2,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8),
+                padding: EdgeInsets.only(left: 8, right: compact ? 2 : 6),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
                   child: Text(w.ar,
                       textDirection: TextDirection.rtl,
-                      style: T.arDisplay(compact ? 40 : 64, color: C.goldBright)),
+                      style: T.arDisplay(compact ? 34 : 64, color: C.goldBright)),
                 ),
               ),
             ),
