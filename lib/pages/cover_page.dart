@@ -49,7 +49,7 @@ class CoverPage extends StatelessWidget {
                       height: emblem,
                       child: Stack(alignment: Alignment.center, children: [
                         CustomPaint(
-                            size: Size.square(emblem), painter: _EmblemPainter()),
+                            size: Size.square(emblem), painter: EmblemPainter()),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text('٢٠٢٧',
@@ -195,7 +195,7 @@ class _CoverPainter extends CustomPainter {
   bool shouldRepaint(_) => false;
 }
 
-class _EmblemPainter extends CustomPainter {
+class EmblemPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size s) {
     final c = s.center(Offset.zero);
