@@ -34,12 +34,20 @@ class WordsPage extends StatelessWidget {
                 child: Row(children: [
                   for (var i = 0; i < 4; i++)
                     Expanded(
-                      child: Text(headers[i],
-                          textAlign: i == 0 ? TextAlign.right : TextAlign.left,
-                          textDirection: i == 0 ? TextDirection.rtl : TextDirection.ltr,
-                          style: i == 0
-                              ? T.ar(13, color: Colors.white70, w: FontWeight.w700)
-                              : T.sans(12, color: Colors.white70, w: FontWeight.w700, spacing: .5)),
+                      // Every label gets the same alignment and inset. The
+                      // first column used to be right-aligned RTL while the
+                      // rest were left-aligned LTR, so 'الكلمة' and 'Meaning'
+                      // each sat hard against their shared boundary and read
+                      // as one fused blob at every width.
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(headers[i],
+                            textAlign: TextAlign.center,
+                            textDirection: i == 0 ? TextDirection.rtl : TextDirection.ltr,
+                            style: i == 0
+                                ? T.ar(13, color: Colors.white70, w: FontWeight.w700)
+                                : T.sans(12, color: Colors.white70, w: FontWeight.w700, spacing: .5)),
+                      ),
                     ),
                 ]),
               ),
