@@ -55,7 +55,7 @@ jobs:
       # self-contained. The default fetches CanvasKit from gstatic, which
       # renders a blank page wherever that host is unreachable.
       - run: sh tool/build_web.sh /${{ github.event.repository.name }}/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web
           path: build/web
@@ -98,7 +98,7 @@ jobs:
           echo "Release signing configured."
 
       - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
@@ -121,7 +121,7 @@ jobs:
         run: |
           Compress-Archive -Path "build\windows\x64\runner\Release\*" `
             -DestinationPath "asu-planner-windows.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-zip
           path: asu-planner-windows.zip
