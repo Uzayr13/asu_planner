@@ -91,6 +91,57 @@ Whatever you pick, the base href must match where it is served. Build with
 `sh tool/build_web.sh /` for a domain root, or `sh tool/build_web.sh /some/path/`
 for a subpath.
 
+## Install and offline
+
+The web build is installable and works with no network. Flutter 3.47 ships a
+service worker that unregisters itself, so this is done by two files of our
+own: `web/sw.js` (a real offline-first worker) and `web/flutter_bootstrap.js`
+(registers it, and deliberately omits `serviceWorkerSettings` — that path is
+deprecated and would register Flutter's stub over ours).
+
+**On iOS and macOS — Add to Home Screen.** Share → Add to Home Screen. This is
+not optional: Safari deletes website data after seven days in a normal tab, and
+only a home-screen install is exempt. The app says this once on first visit.
+
+**On Android** the browser offers Install, or Settings has the APK.
+**On Windows** Settings has the zip, or just use the web build.
+
+After the first visit the app runs from cache — including the fonts and the
+CanvasKit renderer — so it opens with no connection. A new build replaces the
+cache on the next online visit.
+
+Verify the offline claim any time:
+
+```bash
+sh tool/build_web.sh /
+python3 -m http.server 8080 --directory build/web &
+node tool/offline_check.mjs
+```
+
+It warms the cache, kills the server, reloads, and fails unless the app renders.
+
+## Security
+
+**What this app is.** Notes are stored on your device and nowhere else. There is
+no server, no account, and nothing is uploaded. The web build makes **zero
+external requests** — fonts and the renderer are bundled — so there is no third
+party in the path at all. Text is drawn to a canvas rather than the DOM, so
+notes cannot be interpreted as markup.
+
+**What it is not.** There is no app lock. Anyone who can unlock the device or
+open the browser profile can read the notes. That is the main gap, and it is the
+next thing worth building.
+
+**Backups are the trust boundary.** Importing a JSON file writes into the
+store. The parser rejects files that are oversized, malformed, from a future
+format version, or that try to write reserved `backup:`/`ui:` keys; nothing is
+applied unless the whole file validates, and a snapshot is taken first. Still:
+import a file only from someone you trust.
+
+**Signing keys.** The Android release keystore lives outside the repo in
+`android/key.properties` (gitignored). Back it up — losing it means users
+cannot update without uninstalling, which erases their notes.
+
 ## Reverting
 
 Every change is its own commit, tagged and pushed, so you can go back to any
@@ -133,7 +184,15 @@ lib/
   widgets/holiday_widgets.dart  holiday list card + day labels
   data/calendar_math.dart Monday-first grid, ISO weeks, 53 planner weeks
   widgets/common.dart     tabs, footer, headers, EditableBox, WordCard
-  pages/                  cover, year, month, week, day, notes, words, settings sheet
+  pages/                  cover, year, month, week, day, notes, words, settings, welcome notice
+
+web/
+  sw.js                   offline-first service worker
+  flutter_bootstrap.js    loader; registers sw.js, leaves Flutter's stub alone
+tool/
+  build_web.sh            the canonical web release build
+  offline_check.mjs       proves the app renders with no server
+  screenshot_matrix.mjs   screenshots every view at ten viewport sizes
 ```
 
 ## Views (2027 only)
