@@ -50,12 +50,15 @@ class Store extends ChangeNotifier {
   /// Only `String` and `bool` values are included; anything else is skipped
   /// rather than cast, so a stray non-plannable entry can never poison an
   /// export. Empty text is already absent — `setText('')` removes the key.
-  /// Reserved `backup:*` keys are excluded so an export never contains the
-  /// snapshot of another export.
+  /// Reserved keys are excluded: `backup:*` so an export never contains the
+  /// snapshot of another export, `ui:*` so UI state (dismissed notices) does
+  /// not travel with a user's notes.
   Map<String, Object> dump() {
     final out = <String, Object>{};
     for (final key in _p.getKeys()) {
-      if (key.startsWith(kBackupKeyPrefix)) continue;
+      if (key.startsWith(kBackupKeyPrefix) || key.startsWith(kUiKeyPrefix)) {
+        continue;
+      }
       final v = _p.get(key);
       // Separate branches so Dart promotes each to a non-nullable Object;
       // `v is String || v is bool` promotes to neither.

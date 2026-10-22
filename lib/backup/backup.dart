@@ -32,6 +32,13 @@ const String kBackupKeyPrefix = 'backup:';
 /// Where the pre-import snapshot lives.
 const String kBackupSnapshotKey = '${kBackupKeyPrefix}snapshot';
 
+/// Key prefix reserved for UI state (which notices have been dismissed).
+///
+/// Also excluded from exports and rejected on import. Otherwise a backup
+/// carries the flag, and importing it would re-show — or re-dismiss — a notice
+/// on a device where the user never made that choice.
+const String kUiKeyPrefix = 'ui:';
+
 /// A parsed backup file.
 class Backup {
   const Backup({
@@ -137,9 +144,10 @@ Backup decodeBackup(String json) {
 
   final notes = <String, Object>{};
   for (final entry in raw.entries) {
-    if (entry.key.startsWith(kBackupKeyPrefix)) {
+    if (entry.key.startsWith(kBackupKeyPrefix) ||
+        entry.key.startsWith(kUiKeyPrefix)) {
       throw BackupFormatException(
-          'Key "${entry.key}" is reserved for the app\'s own backup data and cannot be imported.');
+          'Key "${entry.key}" is reserved for app state and cannot be imported.');
     }
     final v = entry.value;
     if (v is String) {

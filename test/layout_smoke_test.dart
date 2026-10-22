@@ -17,7 +17,10 @@ void main() {
   setUp(() {
     // No network in tests: without this google_fonts hangs or throws.
     GoogleFonts.config.allowRuntimeFetching = false;
-    SharedPreferences.setMockInitialValues({});
+    // Pre-dismiss the first-visit notice. It is a modal dialog over the whole
+    // scaffold, so with it open the bottom-bar taps below would hit the barrier
+    // and pass only incidentally.
+    SharedPreferences.setMockInitialValues({'ui:noticeSeen': true});
   });
 
   const sizes = <(String, double, double)>[
