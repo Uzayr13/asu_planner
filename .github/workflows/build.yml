@@ -12,6 +12,7 @@ name: build
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -125,3 +126,40 @@ jobs:
           name: windows-zip
           path: asu-planner-windows.zip
           if-no-files-found: error
+
+  # Attach the builds to a GitHub Release when a version tag is pushed.
+  #
+  # This is where the app's download links point. They cannot be artifacts —
+  # those expire after 90 days and the links would rot silently. Releases are
+  # permanent, and we already tag every change, so this page doubles as a
+  # changelog you can download from.
+  #
+  # Runs only on a v* tag, never on a branch push.
+  release:
+    name: release
+    needs: [test, android, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect release assets
+        run: |
+          mkdir -p dist
+          cp artifacts/android-apk/app-release.apk dist/app-release.apk
+          cp artifacts/windows-zip/asu-planner-windows.zip dist/windows.zip
+          ls -la dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/app-release.apk
+            dist/windows.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true
