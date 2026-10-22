@@ -8,6 +8,7 @@ import 'pages/month_page.dart';
 import 'pages/notes_page.dart';
 import 'pages/settings_sheet.dart';
 import 'pages/week_page.dart';
+import 'pages/welcome_notice.dart';
 import 'pages/words_page.dart';
 import 'pages/year_page.dart';
 import 'store.dart';
@@ -97,17 +98,49 @@ class PlannerScreen extends StatelessWidget {
       ViewMode.words => const _Scroll(child: WordsPage()),
     };
 
-    return Scaffold(
-      backgroundColor: C.paper,
-      body: SafeArea(
-        bottom: false,
-        child: Center(
-          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: body),
+    return _NoticeGate(
+      child: Scaffold(
+        backgroundColor: C.paper,
+        body: SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: body),
+          ),
         ),
+        bottomNavigationBar: const _ViewBar(),
       ),
-      bottomNavigationBar: const _ViewBar(),
     );
   }
+}
+
+/// Fires the first-visit notice exactly once, after the first frame.
+///
+/// The dialog needs a mounted context with a Navigator, so it cannot be shown
+/// from initState directly; the post-frame callback handles that. [_fired]
+/// stops rebuilds from stacking a second dialog before the first is dismissed.
+class _NoticeGate extends StatefulWidget {
+  const _NoticeGate({required this.child});
+  final Widget child;
+
+  @override
+  State<_NoticeGate> createState() => _NoticeGateState();
+}
+
+class _NoticeGateState extends State<_NoticeGate> {
+  bool _fired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _fired) return;
+      _fired = true;
+      WelcomeNotice.maybeShow(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _Scroll extends StatelessWidget {

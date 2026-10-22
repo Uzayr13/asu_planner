@@ -82,6 +82,14 @@ void main() {
               e is BackupFormatException && e.message.contains('reserved'))));
     });
 
+    test('rejects a file trying to write UI state', () {
+      expect(
+          () => decodeBackup(
+              '{"formatVersion": 1, "notes": {"ui:noticeSeen": true}}'),
+          throwsA(predicate((e) =>
+              e is BackupFormatException && e.message.contains('reserved'))));
+    });
+
     test('reports the offending key so a user can find it', () {
       expect(
           () => decodeBackup('{"formatVersion": 1, "notes": {"bad:1": 42}}'),
@@ -226,6 +234,15 @@ void main() {
       expect(s.dump().keys.any((k) => k.startsWith(kBackupKeyPrefix)), isFalse,
           reason: 'an export must not contain the snapshot of another export');
       expect(s.snapshotCreatedAt(), isNotNull);
+    });
+
+    test('dump never exposes UI state such as a dismissed notice', () async {
+      final s = await Store.open();
+      await s.setText('day:2027-01-04', 'real note');
+      await s.setFlag('ui:noticeSeen', true);
+      expect(s.dump().keys.any((k) => k.startsWith(kUiKeyPrefix)), isFalse,
+          reason: 'a backup must not carry whether a notice was dismissed');
+      expect(s.dump()['day:2027-01-04'], 'real note', reason: 'notes still travel');
     });
 
     test('restore brings the notes back exactly', () async {
