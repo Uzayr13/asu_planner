@@ -1,0 +1,64 @@
+name: pages
+
+# Publishes the web build to GitHub Pages on every push to main.
+#
+# This is how the 18 December audience gets the app — a URL they scan from a
+# slide. On iOS and macOS it IS the app: there is no native build to download,
+# so this deployment is the product.
+#
+# Base href is the project-site path (owner.github.io/repo/). If a custom
+# domain is chosen later, change it to '/' and add a CNAME — that is the only
+# thing that changes.
+#
+# One-time setup: Settings -> Pages -> Source -> "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
+      - name: Build
+        # build_web.sh trims the deploy as well: renderer variants no browser
+        # reaches and devtools-only symbols. See the script for why the
+        # Chrome and Safari variants must stay.
+        run: sh tool/build_web.sh /${{ github.event.repository.name }}/
+      - name: Check offline still works
+        run: |
+          python3 -m http.server 8080 --directory build/web &
+          sleep 2
+          npm --prefix tool ci >/dev/null 2>&1 || npm --prefix tool install >/dev/null 2>&1
+          node tool/offline_check.mjs http://127.0.0.1:8080/
+        continue-on-error: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
