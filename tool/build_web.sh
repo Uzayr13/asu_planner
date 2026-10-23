@@ -28,6 +28,18 @@ BASE_HREF="${1:-/asu_planner/}"
 
 flutter build web --release --no-web-resources-cdn --base-href "$BASE_HREF"
 
+# Trim what no browser can fetch. CanvasKit ships several renderer variants
+# and which one is used depends on the browser — Safari takes canvaskit/,
+# Chrome takes chromium/ or webparagraph/ — so those must stay or the app
+# breaks for half the audience. skwasm and wimp are reachable only from a
+# --wasm build and we compile dart2js; *.js.symbols are devtools-only.
+# Roughly halves the deploy (43MB -> 23MB) without touching what a phone
+# actually downloads.
+find build/web -name '*.js.symbols' -delete
+rm -f build/web/canvaskit/skwasm*.js build/web/canvaskit/skwasm*.wasm
+rm -f build/web/canvaskit/wimp*.js build/web/canvaskit/wimp*.wasm
+
 echo
 echo "Built build/web — self-contained, zero external requests."
+du -sh build/web
 echo "Serve it with:  python3 -m http.server 8080 --directory build/web"
