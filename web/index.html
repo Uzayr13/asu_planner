@@ -31,8 +31,65 @@
 
   <title>يَوْمي</title>
   <link rel="manifest" href="manifest.json">
+
+  <!--
+    Instant splash.
+
+    Flutter paints nothing until main.dart.js has loaded and the engine has
+    booted. On a slow connection that is a white page for several seconds, and
+    in a room of people that reads as "it is broken". This block is inline CSS
+    and inline HTML only - no extra request - so it paints on the very first
+    frame and says what the app is while the real one loads.
+
+    It is removed as soon as Flutter produces a frame (see the script at the
+    end of body), and also removes itself after 20 seconds regardless so
+    nobody can ever be trapped behind it.
+  -->
+  <style>
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      /* Matches the icon's own navy ground so the mark blends into the
+         background rather than sitting on a visible square. */
+      background: #12223F;
+      transition: opacity 0.45s ease;
+    }
+    #splash.gone {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #splash .mark {
+      width: min(38vw, 170px);
+      height: min(38vw, 170px);
+    }
+    #splash .name {
+      font-family: 'Noto Naskh Arabic', 'Geeza Pro', 'Segoe UI', system-ui, sans-serif;
+      font-size: clamp(30px, 8vw, 52px);
+      font-weight: 700;
+      color: #C9A24A;
+      line-height: 1.2;
+    }
+    #splash .hint {
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: rgba(201, 201, 201, 0.55);
+    }
+  </style>
 </head>
 <body>
+  <div id="splash" aria-hidden="true">
+    <img class="mark" src="icons/Icon-512.png" alt="">
+    <div class="name">يَوْمي</div>
+    <div class="hint">LOADING</div>
+  </div>
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -42,5 +99,30 @@
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Retire the splash once Flutter has produced its first frame. Watching for
+    // the engine's view element is independent of the loader, so this works
+    // however the app is booted.
+    (function () {
+      var splash = document.getElementById('splash');
+      var done = false;
+      function hide() {
+        if (done) return;
+        done = true;
+        splash.classList.add('gone');
+        setTimeout(function () { splash.remove(); }, 600);
+      }
+      if (document.querySelector('flutter-view')) { hide(); return; }
+      new MutationObserver(function () {
+        if (document.querySelector('flutter-view')) hide();
+      }).observe(document.body, { childList: true, subtree: true });
+      // Never trap the user behind a splash if the engine fails to start.
+      // 60s, not 20: on a throttled connection the app itself can take half
+      // a minute to download, and cutting the splash out early leaves a white
+      // page — strictly worse than the splash we were trying to replace.
+      setTimeout(hide, 60000);
+    })();
+  </script>
 </body>
 </html>
