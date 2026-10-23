@@ -58,7 +58,7 @@ class CoverPage extends StatelessWidget {
                       ]),
                     ),
                   SizedBox(height: short ? l.gapL : l.gapXl + G.s),
-                  Text('المفكرة الرقمية',
+                  Text('يَوْمي',
                       textDirection: TextDirection.rtl,
                       style: T.arDisplay(46, color: C.silver)),
                   SizedBox(height: l.gapS),

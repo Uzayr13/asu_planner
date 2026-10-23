@@ -1,6 +1,6 @@
 'use strict';
 
-// Offline-first service worker for ASU Planner.
+// Offline-first service worker for Yawmi.
 //
 // Flutter 3.47's own build emits a service worker whose activate handler
 // unregisters itself (see flutter_tools/lib/src/web/file_generators/js/

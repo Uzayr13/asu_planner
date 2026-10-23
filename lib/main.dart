@@ -50,7 +50,7 @@ class _PlannerAppState extends State<PlannerApp> {
         child: AppScope(
           app: _app,
           child: MaterialApp(
-            title: 'المفكرة الرقمية · Digital Planner 2027',
+            title: 'يَوْمي',
             debugShowCheckedModeBanner: false,
             theme: buildTheme(),
             // Single choke point for the width-based type scale: every T.*

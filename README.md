@@ -1,7 +1,5 @@
-# ASU Digital Planner 2027 · المفكرة الرقمية
-
-Bilingual (Arabic/English) Flutter planner for the Arabic Speaking Union – Mauritius.
-See `planner-app-spec.md` for the full spec.
+# يَوْمي
+Bilingual Arabic/English digital planner 2027 for the Arabic Speaking Union — Mauritius.
 
 ## Supported platforms
 
