@@ -34,16 +34,21 @@ class YearPage extends StatelessWidget {
                       style: T.sans(12, color: C.gold, w: FontWeight.w700, spacing: 3)),
                 ]),
               ),
+              // Align keeps the Arabic block on the right edge; Flexible alone
+              // left it floating mid-header.
               Flexible(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(toArabicDigits(planYear),
-                        textDirection: TextDirection.rtl, style: T.arDisplay(44)),
-                  ),
-                  Text('نظرة على السنة',
-                      textDirection: TextDirection.rtl, style: T.ar(13, color: C.gold)),
-                ]),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(toArabicDigits(planYear),
+                          textDirection: TextDirection.rtl, style: T.arDisplay(44)),
+                    ),
+                    Text('نظرة على السنة',
+                        textDirection: TextDirection.rtl, style: T.ar(13, color: C.gold)),
+                  ]),
+                ),
               ),
             ]),
             const SizedBox(height: 10),
@@ -182,11 +187,14 @@ class _EventBanner extends StatelessWidget {
               ])),
             ),
             Flexible(
-              child: Text(event.ar,
-                  textDirection: TextDirection.rtl,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: T.ar(14, color: C.gold)),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(event.ar,
+                    textDirection: TextDirection.rtl,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.ar(14, color: C.gold)),
+              ),
             ),
           ]),
         ),

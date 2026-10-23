@@ -40,9 +40,15 @@ class HolidayList extends StatelessWidget {
               child: Text(month == null ? 'PUBLIC HOLIDAYS 2027' : 'PUBLIC HOLIDAYS',
                   style: T.sans(10.5, color: C.holiday, w: FontWeight.w700, spacing: 2)),
             ),
+            // Align keeps the Arabic on the right edge. Flexible alone made it
+            // a flex child sitting at the left of its share, so it floated in
+            // the middle of the card.
             Flexible(
-              child: Text('العطل الرسمية',
-                  textDirection: TextDirection.rtl, style: T.ar(13, color: C.holiday)),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text('العطل الرسمية',
+                    textDirection: TextDirection.rtl, style: T.ar(13, color: C.holiday)),
+              ),
             ),
           ]),
           const SizedBox(height: 8),
@@ -64,17 +70,20 @@ class HolidayList extends StatelessWidget {
                       '${daysFullEn[r.date.weekday - 1].substring(0, 3)} ${r.date.day} ${monthsEn[r.date.month - 1].substring(0, 3)}',
                       style: T.sans(11.5, w: FontWeight.w700)),
                 ),
-                Flexible(
+                Expanded(
                   child: Text('${r.en}${r.prov ? ' *' : ''}',
                       maxLines: 2, overflow: TextOverflow.ellipsis, style: T.sans(12)),
                 ),
                 const SizedBox(width: 8),
                 Flexible(
-                  child: Text(r.ar,
-                      textDirection: TextDirection.rtl,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: T.ar(12.5, color: r.color)),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(r.ar,
+                        textDirection: TextDirection.rtl,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: T.ar(12.5, color: r.color)),
+                  ),
                 ),
               ]),
             ),

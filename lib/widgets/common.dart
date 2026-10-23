@@ -149,12 +149,19 @@ class PageFooter extends StatelessWidget {
             child: Text('Swipe to turn the page',
                 style: T.sans(10.5, color: C.gold, w: FontWeight.w700)),
           ),
+          // Align is load-bearing. Making this Flexible stopped the text
+          // overflowing the row, but it also turned it into a flex child that
+          // sits at the LEFT of its share — it used to be pushed flush right by
+          // the Expanded beside it. Align puts it back on the right edge.
           Flexible(
-            child: Text('اتحاد متحدثي اللغة العربية - موريشيوس',
-                textDirection: TextDirection.rtl,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: T.ar(11, color: C.navy.withValues(alpha: .75))),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text('اتحاد متحدثي اللغة العربية - موريشيوس',
+                  textDirection: TextDirection.rtl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.ar(11, color: C.navy.withValues(alpha: .75))),
+            ),
           ),
         ]),
       ),
@@ -204,16 +211,21 @@ class SectionHeader extends StatelessWidget {
               ),
             ]),
           ),
+          // Align puts the Arabic block back on the right edge; without it the
+          // Flexible column sits left of its share and floats in the middle.
           Flexible(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(titleAr,
-                    textDirection: TextDirection.rtl, style: T.arDisplay(size * .95)),
-              ),
-              if (subAr != null)
-                Text(subAr!, textDirection: TextDirection.rtl, style: T.ar(12, color: C.gold)),
-            ]),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(titleAr,
+                      textDirection: TextDirection.rtl, style: T.arDisplay(size * .95)),
+                ),
+                if (subAr != null)
+                  Text(subAr!, textDirection: TextDirection.rtl, style: T.ar(12, color: C.gold)),
+              ]),
+            ),
           ),
         ]),
         const SizedBox(height: 10),
@@ -360,19 +372,23 @@ class WordCard extends StatelessWidget {
             ]),
           ),
           if (w != null)
-            // Flexible + FittedBox: the Arabic glyph is wide and has no flex of
-            // its own, so at 320pt it used to push past the Row and overflow.
-            // Scale it down to whatever width is left instead.
+            // Flexible + FittedBox stops the wide Arabic glyph overflowing the
+            // row at narrow widths. Align keeps it on the right edge of the
+            // card — without it the glyph floats mid-card with empty space
+            // beside it, because Flexible made it a flex child sitting at the
+            // left of its share.
             Flexible(
               flex: 2,
-              child: Padding(
-                padding: EdgeInsets.only(left: 8, right: compact ? 2 : 6),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(w.ar,
-                      textDirection: TextDirection.rtl,
-                      style: T.arDisplay(compact ? 34 : 64, color: C.goldBright)),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 8, right: compact ? 2 : 6),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(w.ar,
+                        textDirection: TextDirection.rtl,
+                        style: T.arDisplay(compact ? 34 : 64, color: C.goldBright)),
+                  ),
                 ),
               ),
             ),
