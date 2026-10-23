@@ -58,9 +58,12 @@ class CoverPage extends StatelessWidget {
                       ]),
                     ),
                   SizedBox(height: short ? l.gapL : l.gapXl + G.s),
+                  // Naskh, not Amiri: the bundled Amiri renders يَوْمي's
+                  // combining marks detached and floating above the word.
+                  // Naskh shapes the name exactly as written.
                   Text('يَوْمي',
                       textDirection: TextDirection.rtl,
-                      style: T.arDisplay(46, color: C.silver)),
+                      style: T.ar(46, color: C.silver, w: FontWeight.w700)),
                   SizedBox(height: l.gapS),
                   Text('DIGITAL PLANNER 2027',
                       style: T.sans(16,
