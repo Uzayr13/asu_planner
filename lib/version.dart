@@ -7,4 +7,4 @@
 ///
 /// The build number after `+` in pubspec is not part of this: release tags are
 /// `v0.2.48`-style and match the build name only.
-const String kAppVersion = '0.2.50';
+const String kAppVersion = '0.2.51';

@@ -7,6 +7,7 @@ import 'pages/day_page.dart';
 import 'pages/month_page.dart';
 import 'pages/notes_page.dart';
 import 'pages/settings_sheet.dart';
+import 'pages/update_banner.dart';
 import 'pages/week_page.dart';
 import 'pages/welcome_notice.dart';
 import 'pages/words_page.dart';
@@ -103,9 +104,17 @@ class PlannerScreen extends StatelessWidget {
         backgroundColor: C.paper,
         body: SafeArea(
           bottom: false,
-          child: Center(
-            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: body),
-          ),
+          child: Column(children: [
+            // Absent unless a newer build is actually available, so the normal
+            // layout is untouched and the layout smoke tests see no change.
+            const UpdateBanner(),
+            Expanded(
+              child: Center(
+                child:
+                    ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: body),
+              ),
+            ),
+          ]),
         ),
         bottomNavigationBar: const _ViewBar(),
       ),
