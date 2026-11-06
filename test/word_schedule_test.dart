@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:asu_planner/data/content.dart';
@@ -103,5 +105,46 @@ void main() {
     final dec26 = wordsInMonth(12, year: 2026);
     expect(dec26.length, 1);
     expect(dec26.single.en, 'Market');
+  });
+
+  group('audio files', () {
+    final dir = Directory('assets/audio/words');
+
+    test('every recording is named for a slot that exists', () {
+      // Only audio files matter — README.txt and anything else sits alongside.
+      const exts = ['mp3', 'm4a', 'wav', 'ogg', 'aac'];
+      final pattern = RegExp(r'^(\d{2})\.(mp3|m4a|wav|ogg|aac)$');
+      final files = dir
+          .listSync()
+          .whereType<File>()
+          .map((f) => f.uri.pathSegments.last)
+          .where((n) => exts.any((e) => n.endsWith('.$e')))
+          .toList();
+      expect(files, isNotEmpty, reason: 'recordings should be present');
+
+      for (final name in files) {
+        final m = pattern.firstMatch(name);
+        expect(m, isNotNull,
+            reason: '$name does not match NN.mp3 — the slot number is the only '
+                'link between a recording and its word');
+        final slot = int.parse(m!.group(1)!);
+        expect(slot, inInclusiveRange(1, words.length),
+            reason: '$name points at slot $slot but the schedule has '
+                '${words.length} slots');
+      }
+    });
+
+    test('the recordings on hand match their words', () {
+      // The twelve that already had audio sit on the first half of each month
+      // plus the launch slot's neighbours — i.e. every even slot from 2 up.
+      // This documents the mapping; the app itself cannot tell whether a file
+      // says the right word.
+      const present = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
+      for (final slot in present) {
+        final name = 'assets/audio/words/${slot.toString().padLeft(2, '0')}.mp3';
+        expect(File(name).existsSync(), isTrue,
+            reason: 'expected $name for ${words[slot - 1].en}');
+      }
+    });
   });
 }
