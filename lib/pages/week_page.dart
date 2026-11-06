@@ -64,7 +64,7 @@ class WeekPage extends StatelessWidget {
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(child: _Priorities(weekKey: key)),
             const SizedBox(width: 12),
-            Expanded(child: WordCard(month: last.month, compact: true)),
+            Expanded(child: WordCard(date: AppScope.of(context).date, compact: true)),
           ]),
         ),
         const SizedBox(height: 14),

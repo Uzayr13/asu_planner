@@ -180,7 +180,7 @@ class DayPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        WordCard(month: date.month, compact: true),
+        WordCard(date: date, compact: true),
       ]),
     );
   }

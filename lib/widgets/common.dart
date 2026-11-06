@@ -324,15 +324,19 @@ class _EditableBoxState extends State<EditableBox> {
   }
 }
 
-/// Navy rounded "Word of the month" card. [compact] = smaller variant.
+/// Navy rounded vocabulary card, showing whichever word covers [date].
+///
+/// Resolves the word itself through `wordAt` / `wordIndexAt` so no call site
+/// has to reason about the schedule. `compact` selects the smaller variant.
 class WordCard extends StatelessWidget {
-  const WordCard({super.key, required this.month, this.compact = false});
-  final int month;
+  const WordCard({super.key, required this.date, this.compact = false});
+  final DateTime date;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final w = monthWords[month];
+    final w = wordAt(date);
+    final index = wordIndexAt(date);
     final pad = compact ? 14.0 : 24.0;
     return Container(
       padding: EdgeInsets.all(pad),
@@ -341,13 +345,15 @@ class WordCard extends StatelessWidget {
         textDirection: TextDirection.ltr,
         child: Row(children: [
           // 3:2 rather than equal halves — the label column was starving and
-          // 'WORD OF THE MONTH' wrapped to three cramped lines in the compact
-          // variant on the Week view.
+          // the label wrapped to three cramped lines in the compact variant on
+          // the Week view.
           Expanded(
             flex: 3,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('WORD OF THE MONTH',
-                  maxLines: 2,
+              // The range, not "word of the month": two words share every month
+              // from 2027, so the range is what tells you which one is showing.
+              Text(w?.rangeLabel ?? 'ARABIC WORD · الكلمة العربية',
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: T.sans(compact ? 9 : 10,
                       color: C.goldBright, w: FontWeight.w700, spacing: compact ? 1 : 2)),
@@ -367,7 +373,7 @@ class WordCard extends StatelessWidget {
                   Text(w.noteEn, style: T.sans(11, color: Colors.white54)),
                 ],
                 SizedBox(height: compact ? 8 : 14),
-                HearButton(month: month, compact: compact),
+                HearButton(index: index, compact: compact),
               ],
             ]),
           ),
@@ -398,15 +404,19 @@ class WordCard extends StatelessWidget {
   }
 }
 
-/// "Hear now" pill. Plays assets/audio/words/<MM>.mp3; shows a friendly
-/// message while the recording hasn't been added yet.
+/// "Hear now" pill. Plays assets/audio/words/<NN>.mp3 for a schedule slot;
+/// shows a friendly message while the recording hasn't been added yet.
 class HearButton extends StatelessWidget {
-  const HearButton({super.key, required this.month, this.compact = false});
-  final int month;
+  const HearButton({super.key, required this.index, this.compact = false});
+
+  /// 1-based position in the word schedule, or null outside it.
+  final int? index;
   final bool compact;
 
   Future<void> _tap(BuildContext context) async {
-    final ok = await WordAudio.toggle(month);
+    final i = index;
+    if (i == null) return;
+    final ok = await WordAudio.toggle(i);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -422,7 +432,7 @@ class HearButton extends StatelessWidget {
     return ValueListenableBuilder<int?>(
       valueListenable: WordAudio.playing,
       builder: (_, p, __) {
-        final on = p == month;
+        final on = index != null && p == index;
         return GestureDetector(
           onTap: () => _tap(context),
           child: Container(

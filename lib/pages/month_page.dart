@@ -90,7 +90,13 @@ class MonthPage extends StatelessWidget {
         SizedBox(height: l.gapM),
         HolidayList(month: month),
         SizedBox(height: l.gapM),
-        WordCard(month: month),
+        // month_page has no date of its own, only a month number, so it reads
+        // the shared selection. Falls back to the first of the displayed month
+        // if the selection sits on a different page.
+        WordCard(
+            date: AppScope.of(context).date.month == month
+                ? AppScope.of(context).date
+                : DateTime(planYear, month)),
       ]),
     );
   }
