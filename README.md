@@ -176,7 +176,7 @@ lib/
   layout/layout.dart      the one authority for breakpoints, spacing and row heights
   backup/backup.dart      pure-Dart JSON encode / decode / merge for notes
   backup/backup_io.dart   the thin file-picker edge
-  data/content.dart       months, days, the 12 Words of the Month, ASU events
+  data/content.dart       months, days, the 25-word schedule, ASU events
   data/holidays.dart      Mauritius public holidays 2027
   audio/word_audio.dart   "Hear now" playback (looks for recordings in assets/audio/words)
   widgets/holiday_widgets.dart  holiday list card + day labels
@@ -216,11 +216,18 @@ Arabic holiday names are drafts for the ASU team to review. Verify the list
 against the Government Information Service / Gazette before release.
 World Arabic Language Day (18 Dec) is shown in gold as an ASU event, not a holiday.
 
-## Word of the Month audio
+## The word schedule
 
-Each word card has a **Hear now / استمع** button. Add recordings to
-`assets/audio/words/` named `01.mp3` ... `12.mp3` (see the README.txt there).
-No code change is needed: until a file exists the button says "Recording coming soon".
+Twenty-five words on a semi-monthly schedule: one for the launch fortnight of
+18–31 Dec 2026, then two per calendar month through 2027. The Month view shows
+both words of the month side by side at the top; Week and Day show whichever
+word covers the selected date.
+
+Audio is named by **slot number** — `01.mp3` … `25.mp3` in `assets/audio/words/`
+(see the README.txt there for the full list). The slot number is the only thing
+linking a recording to a word, so it must match the schedule exactly. Until a
+file exists the button says "Recording coming soon"; no code change is needed to
+add one.
 
 ## Backup and restore
 
@@ -263,13 +270,13 @@ just after.
 - **No automatic sync.** Notes are local; moving devices means export then
   import (see Backup and restore). PDF export and cloud sync remain Phase 2 in
   the spec.
-- **Word of the Month:** all 12 are filled in from the design reference. Have the
+- **Word schedule:** all 25 words are in, from the committee's list. Have the
   ASU team proof-read the Arabic diacritics and notes in `lib/data/content.dart`.
 - **Eid-Ul-Fitr (10 Mar 2027) is provisional** (moon sighting) and the Arabic
   holiday names are drafts. Verify against the Gazette before release.
-- **Audio recordings** for Word of the Month are not present; add
-  `assets/audio/words/01.mp3`…`12.mp3` and the button starts working with no
-  code change.
+- **Audio recordings:** 12 of 25 slots have audio. The rest need recording —
+  see `assets/audio/words/README.txt` for which. The slot number is the only
+  link between a recording and its word, so double-check it when adding one.
 - Page layouts follow the screenshots by eye; compare on a device and fine-tune spacing.
 - Not yet built (Phase 2): reminders, PDF export, streak counter, backup/sync.
 - **It is a 2027 planner.** `planYear` and the holiday table are hardcoded;
