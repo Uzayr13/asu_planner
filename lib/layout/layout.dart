@@ -108,8 +108,13 @@ class L {
   /// with [textScale] so large system fonts never overflow their cell.
   ///
   /// [rows] is the 4-6 count of calendar rows in this month.
-  double monthRowHeight(int rows) {
-    final chrome = isShort ? kMonthChromeShort : kMonthChrome;
+  ///
+  /// [extraChrome] is anything the caller has added above the grid that the
+  /// base estimate does not know about — the words band, for instance. Passing
+  /// a measured height here rather than tuning the constants means adding
+  /// chrome can never silently make the grid overflow.
+  double monthRowHeight(int rows, {double extraChrome = 0}) {
+    final chrome = (isShort ? kMonthChromeShort : kMonthChrome) + extraChrome;
     final per = math.max(0.0, screenHeight - chrome) / rows;
     final t = textScale.clamp(1.0, 1.8);
     return per.clamp(kMinMonthCell * t, kMaxMonthCell * t);

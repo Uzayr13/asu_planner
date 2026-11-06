@@ -7,6 +7,7 @@ import '../layout/layout.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/holiday_widgets.dart';
+import '../widgets/month_words_band.dart';
 
 /// MONTH VIEW: swipe between the 12 months.
 class MonthView extends StatelessWidget {
@@ -22,20 +23,45 @@ class MonthView extends StatelessWidget {
       );
 }
 
-class MonthPage extends StatelessWidget {
+class MonthPage extends StatefulWidget {
   const MonthPage({super.key, required this.month});
   final int month; // 1..12
 
   @override
+  State<MonthPage> createState() => _MonthPageState();
+}
+
+class _MonthPageState extends State<MonthPage> {
+  /// The words band sits above the grid and is not part of the base chrome
+  /// estimate in `layout.dart`, so its height is measured and fed in. Anything
+  /// added above the grid later must do the same — hand-tuning the constants
+  /// is exactly how the grid ends up overflowing.
+  final _bandKey = GlobalKey();
+  double _bandHeight = 0;
+
+  void _measureBand() {
+    if (!mounted) return;
+    final box = _bandKey.currentContext?.findRenderObject() as RenderBox?;
+    final h = box?.size.height ?? 0;
+    if (h > 0 && h != _bandHeight) {
+      setState(() => _bandHeight = h);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Re-measure every build, not once: collapsing the band changes its height
+    // and the grid has to give that space back.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureBand());
     final l = L.of(context);
+    final month = widget.month;
     final blanks = leadingBlanks(planYear, month);
     final total = daysInMonth(planYear, month);
     final rows = ((blanks + total) / 7).ceil();
     // Row height comes from MediaQuery via L, not from a LayoutBuilder: this
     // page sits inside a SingleChildScrollView where LayoutBuilder reports
     // unbounded height. Deriving from that would produce infinity.
-    final rowH = l.monthRowHeight(rows);
+    final rowH = l.monthRowHeight(rows, extraChrome: _bandHeight);
     // Short rows cannot show a 3-6 line note field without overflowing the
     // cell, so scale the note field down with the cell.
     final noteMax = rowH >= 90 ? 6 : (rowH >= 70 ? 3 : 1);
@@ -49,6 +75,9 @@ class MonthPage extends StatelessWidget {
           titleAr: monthsAr[month - 1],
           subAr: toArabicDigits(planYear),
         ),
+        // Both words of the month, at the top, side by side. Measured so the
+        // grid can give back exactly the height it takes.
+        KeyedSubtree(key: _bandKey, child: MonthWordsBand(month: month)),
         SizedBox(height: l.gapL),
         Directionality(
           textDirection: TextDirection.ltr,
@@ -90,13 +119,6 @@ class MonthPage extends StatelessWidget {
         SizedBox(height: l.gapM),
         HolidayList(month: month),
         SizedBox(height: l.gapM),
-        // month_page has no date of its own, only a month number, so it reads
-        // the shared selection. Falls back to the first of the displayed month
-        // if the selection sits on a different page.
-        WordCard(
-            date: AppScope.of(context).date.month == month
-                ? AppScope.of(context).date
-                : DateTime(planYear, month)),
       ]),
     );
   }
@@ -104,7 +126,7 @@ class MonthPage extends StatelessWidget {
   Widget _cell(BuildContext context, int day, int total, int col, int noteMax) {
     final inMonth = day >= 1 && day <= total;
     final weekend = col >= 5;
-    final date = DateTime(planYear, month, day);
+    final date = DateTime(planYear, widget.month, day);
     final hol = inMonth ? holidaysOn(date) : const <Holiday>[];
     final evs = inMonth ? eventsOn(date) : const <PlannerEvent>[];
     final isHol = hol.isNotEmpty;
