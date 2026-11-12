@@ -73,8 +73,9 @@ section for 90 days.
 
 ### Hosting the web build privately
 
-The build is a static folder — `build/web` — with **zero external requests**, so
-it can go anywhere you control. GitHub Pages is deliberately **not** used: a
+The build is a static folder — `build/web` — that loads no third-party content,
+so it can go anywhere you control. The only outbound call is the update check
+to GitHub's API (see Security). GitHub Pages is deliberately **not** used: a
 `github.io` URL is public regardless of this repo being private, and the planner
 content is ASU's. Private options:
 
@@ -121,10 +122,12 @@ It warms the cache, kills the server, reloads, and fails unless the app renders.
 ## Security
 
 **What this app is.** Notes are stored on your device and nowhere else. There is
-no server, no account, and nothing is uploaded. The web build makes **zero
-external requests** — fonts and the renderer are bundled — so there is no third
-party in the path at all. Text is drawn to a canvas rather than the DOM, so
-notes cannot be interpreted as markup.
+no server, no account, and nothing is uploaded. The web build bundles its fonts
+and renderer, so no third party is in the path; the app's only network call is a
+version check against GitHub when the planner opens, which carries nothing you
+write and fails silently offline. Text is drawn to a canvas rather than the DOM,
+so notes cannot be interpreted as markup. Settings carries the full privacy and
+terms notice.
 
 **What it is not.** There is no app lock: anyone who can unlock the device or
 open the browser profile can read the notes. This is a decision, not an
@@ -188,6 +191,9 @@ lib/
 web/
   sw.js                   offline-first service worker
   flutter_bootstrap.js    loader; registers sw.js, leaves Flutter's stub alone
+LICENSES/
+  OFL-1.1.txt             SIL Open Font License for the four bundled fonts
+  fonts-notice.txt        the fonts' copyright notices (from the TTFs)
 tool/
   build_web.sh            the canonical web release build
   offline_check.mjs       proves the app renders with no server
@@ -233,7 +239,7 @@ add one.
 ## Backup and restore
 
 The gear on the bottom view bar opens Settings. From there you can move notes
-between devices or keep a copy safe.
+between devices, keep a copy safe, and read the privacy and terms notice.
 
 **To move to a new device**
 
