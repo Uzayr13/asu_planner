@@ -33,6 +33,10 @@ digits.
 Recordings on hand: 02, 04, 06, 08, 10, 12, 14, 16, 18, 20, 22, 24 — the words
 that already had audio. The rest still need recording.
 
+Provenance: the recordings are the ASU's own, made for this planner (confirmed
+12 Nov 2026). Nothing here was sourced from a third-party pronunciation site,
+so no external licence terms attach to them.
+
 .m4a, .wav, .ogg and .aac also work, but **use mp3**: ogg does not decode
 natively on iOS. Until a file exists the "Hear now" button shows "Recording
 coming soon".
