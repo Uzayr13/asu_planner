@@ -126,9 +126,10 @@ external requests** — fonts and the renderer are bundled — so there is no th
 party in the path at all. Text is drawn to a canvas rather than the DOM, so
 notes cannot be interpreted as markup.
 
-**What it is not.** There is no app lock. Anyone who can unlock the device or
-open the browser profile can read the notes. That is the main gap, and it is the
-next thing worth building.
+**What it is not.** There is no app lock: anyone who can unlock the device or
+open the browser profile can read the notes. This is a decision, not an
+oversight — the committee considered a PIN lock and decided against it
+(12 Nov 2026). Treat device access as the trust boundary.
 
 **Backups are the trust boundary.** Importing a JSON file writes into the
 store. The parser rejects files that are oversized, malformed, from a future
@@ -281,3 +282,6 @@ just after.
 - Not yet built (Phase 2): reminders, PDF export, streak counter, backup/sync.
 - **It is a 2027 planner.** `planYear` and the holiday table are hardcoded;
   2028 needs new data and a re-check of the 53-week maths.
+- **No app lock — by decision.** The committee considered a PIN lock and
+  decided against it (12 Nov 2026); device access is the trust boundary.
+  Revisit only if the committee reopens it.
