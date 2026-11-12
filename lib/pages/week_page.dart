@@ -49,7 +49,7 @@ class WeekPage extends StatelessWidget {
         '${toArabicDigits(b.day)} ${monthsAr[b.month - 1]} ${toArabicDigits(planYear)}';
 
     return PlannerPage(
-      activeMonth: first.month,
+      activeMonthIndex: monthPageIndexOf(first),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SectionHeader(
           titleEn: 'Week $n',

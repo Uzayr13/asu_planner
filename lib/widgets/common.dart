@@ -12,8 +12,13 @@ enum ViewMode { year, month, week, day, notes, words }
 /// App-wide navigation state: which view is showing and which date is selected.
 class AppState extends ChangeNotifier {
   AppState() {
-    final n = DateTime.now();
-    date = n.year == planYear ? DateTime(planYear, n.month, n.day) : DateTime(planYear, 1, 1);
+    final now = DateTime.now();
+    // Open on today whenever the plan covers it — on 18 December 2026 that is
+    // the launch day and the launch word is what you should see. Outside
+    // coverage, open at the start of the plan.
+    date = inCoverage(now)
+        ? DateTime(now.year, now.month, now.day)
+        : DateTime(planYear, 1, 1);
   }
 
   bool opened = false; // cover shown until tapped
@@ -43,8 +48,13 @@ class AppState extends ChangeNotifier {
   }
 
   /// Month tab tapped. Keeps the current view unless [switchToMonthView].
+  /// [m] is a month *page index*: 0 = December 2026, 1..12 = January..December
+  /// 2027. See `monthPageIndexOf` in calendar_math.dart.
   void openMonth(int m, {bool switchToMonthView = false}) {
-    if (date.month != m) date = DateTime(planYear, m, 1);
+    final target = monthPageDate(m);
+    if (date.year != target.year || date.month != target.month) {
+      date = target;
+    }
     if (switchToMonthView) view = ViewMode.month;
     notifyListeners();
   }
@@ -67,11 +77,14 @@ class PlannerPage extends StatelessWidget {
   const PlannerPage({
     super.key,
     required this.child,
-    this.activeMonth,
+    this.activeMonthIndex,
     this.tabsOpenMonthView = false,
   });
   final Widget child;
-  final int? activeMonth; // 1-12 or null
+
+  /// Month *page index* to highlight in the tabs — 0 = December 2026,
+  /// 1..12 = January..December 2027, or null when no tab applies.
+  final int? activeMonthIndex;
   final bool tabsOpenMonthView;
 
   @override
@@ -80,7 +93,7 @@ class PlannerPage extends StatelessWidget {
       color: C.paper,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        MonthTabs(active: activeMonth, openMonthView: tabsOpenMonthView),
+        MonthTabs(active: activeMonthIndex, openMonthView: tabsOpenMonthView),
         const SizedBox(height: 20),
         child,
         const SizedBox(height: 16),
@@ -92,6 +105,9 @@ class PlannerPage extends StatelessWidget {
 
 class MonthTabs extends StatelessWidget {
   const MonthTabs({super.key, this.active, this.openMonthView = false});
+
+  /// Month *page index* to highlight — 0 = December 2026, 1..12 = January..December
+  /// 2027. See `monthPageIndexOf` in calendar_math.dart.
   final int? active;
   final bool openMonthView;
 
@@ -102,7 +118,7 @@ class MonthTabs extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Row(children: [
-        for (var m = 1; m <= 12; m++)
+        for (var m = 0; m <= 12; m++)
           Expanded(
             child: GestureDetector(
               onTap: () => app.openMonth(m, switchToMonthView: openMonthView),
@@ -115,12 +131,17 @@ class MonthTabs extends StatelessWidget {
                   color: active == m ? C.navy : C.tab,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
-                // Twelve chips share one row: at 320pt or large text scale the
-                // label would clip, so shrink it to the chip instead.
+                // Thirteen chips share one row: at 320pt or large text scale
+                // the label would clip, so shrink it to the chip instead.
+                // Index 0 is December 2026 — the launch month — which shares
+                // its label with December 2027. The section header shows the
+                // year, so there is no ambiguity about which one is showing.
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    monthsEn[m - 1].substring(0, 3).toUpperCase(),
+                    m == 0
+                        ? 'DEC'
+                        : monthsEn[m - 1].substring(0, 3).toUpperCase(),
                     style: T.sans(8.5,
                         color: active == m ? Colors.white : C.navy.withValues(alpha: .65),
                         w: FontWeight.w700),

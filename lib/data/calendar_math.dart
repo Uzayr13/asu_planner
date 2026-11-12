@@ -5,6 +5,23 @@ const planYear = 2027;
 final yearStart = DateTime(planYear, 1, 1);
 final yearEnd = DateTime(planYear, 12, 31);
 
+/// The plan's coverage. The launch word starts on 18 December 2026 — the day of
+/// the presentation — and the vocabulary runs through the end of 2027. The
+/// calendar therefore spans one month further back than [planYear].
+final coverageStart = DateTime(2026, 12, 18);
+final coverageEnd = DateTime(planYear, 12, 31);
+
+/// True when [d] falls inside the covered period.
+bool inCoverage(DateTime d) =>
+    !d.isBefore(DateTime(2026, 12, 18)) && !d.isAfter(coverageEnd);
+
+/// Month page index: 0 = December 2026, 1..12 = January..December 2027.
+int monthPageIndexOf(DateTime d) => d.year == 2026 ? 0 : d.month;
+
+/// The first day of the month shown at [index] (see [monthPageIndexOf]).
+DateTime monthPageDate(int index) =>
+    index <= 0 ? DateTime(2026, 12, 1) : DateTime(planYear, index, 1);
+
 bool inPlanYear(DateTime d) => d.year == planYear;
 
 /// Blank cells before day 1 in a Monday-first grid.

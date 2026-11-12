@@ -15,17 +15,24 @@ class MonthView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PagedView(
-        count: 12,
-        indexOf: (d) => d.month - 1,
-        onPage: (app, i) => app.setDate(
-            DateTime(planYear, i + 1, app.date.day.clamp(1, daysInMonth(planYear, i + 1)))),
-        builder: (i) => MonthPage(month: i + 1),
+        // 13 pages: December 2026 (the launch month) plus January..December
+        // 2027. Without it the launch word of 18 Dec 2026 is unreachable.
+        count: 13,
+        indexOf: monthPageIndexOf,
+        onPage: (app, i) {
+          final first = monthPageDate(i);
+          app.setDate(DateTime(first.year, first.month,
+              app.date.day.clamp(1, daysInMonth(first.year, first.month))));
+        },
+        builder: (i) => MonthPage(date: monthPageDate(i)),
       );
 }
 
 class MonthPage extends StatefulWidget {
-  const MonthPage({super.key, required this.month});
-  final int month; // 1..12
+  const MonthPage({super.key, required this.date});
+
+  /// First day of the month this page shows — 1 Dec 2026 through 1 Dec 2027.
+  final DateTime date;
 
   @override
   State<MonthPage> createState() => _MonthPageState();
@@ -54,9 +61,10 @@ class _MonthPageState extends State<MonthPage> {
     // and the grid has to give that space back.
     WidgetsBinding.instance.addPostFrameCallback((_) => _measureBand());
     final l = L.of(context);
-    final month = widget.month;
-    final blanks = leadingBlanks(planYear, month);
-    final total = daysInMonth(planYear, month);
+    final month = widget.date.month;
+    final year = widget.date.year;
+    final blanks = leadingBlanks(year, month);
+    final total = daysInMonth(year, month);
     final rows = ((blanks + total) / 7).ceil();
     // Row height comes from MediaQuery via L, not from a LayoutBuilder: this
     // page sits inside a SingleChildScrollView where LayoutBuilder reports
@@ -67,17 +75,17 @@ class _MonthPageState extends State<MonthPage> {
     final noteMax = rowH >= 90 ? 6 : (rowH >= 70 ? 3 : 1);
 
     return PlannerPage(
-      activeMonth: month,
+      activeMonthIndex: monthPageIndexOf(widget.date),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SectionHeader(
           titleEn: monthsEn[month - 1],
-          subEn: '$planYear',
+          subEn: '$year',
           titleAr: monthsAr[month - 1],
-          subAr: toArabicDigits(planYear),
+          subAr: toArabicDigits(year),
         ),
         // Both words of the month, at the top, side by side. Measured so the
         // grid can give back exactly the height it takes.
-        KeyedSubtree(key: _bandKey, child: MonthWordsBand(month: month)),
+        KeyedSubtree(key: _bandKey, child: MonthWordsBand(month: month, year: year)),
         SizedBox(height: l.gapL),
         Directionality(
           textDirection: TextDirection.ltr,
@@ -126,7 +134,7 @@ class _MonthPageState extends State<MonthPage> {
   Widget _cell(BuildContext context, int day, int total, int col, int noteMax) {
     final inMonth = day >= 1 && day <= total;
     final weekend = col >= 5;
-    final date = DateTime(planYear, widget.month, day);
+    final date = DateTime(widget.date.year, widget.date.month, day);
     final hol = inMonth ? holidaysOn(date) : const <Holiday>[];
     final evs = inMonth ? eventsOn(date) : const <PlannerEvent>[];
     final isHol = hol.isNotEmpty;

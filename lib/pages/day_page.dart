@@ -58,7 +58,7 @@ class DayPage extends StatelessWidget {
         );
 
     return PlannerPage(
-      activeMonth: date.month,
+      activeMonthIndex: monthPageIndexOf(date),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SectionHeader(
           titleEn: daysFullEn[di],

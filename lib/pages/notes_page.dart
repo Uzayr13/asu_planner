@@ -13,7 +13,7 @@ class NotesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlannerPage(
-      activeMonth: null,
+      activeMonthIndex: null,
       tabsOpenMonthView: true,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         SectionHeader(

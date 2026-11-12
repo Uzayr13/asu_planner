@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:asu_planner/data/calendar_math.dart';
 import 'package:asu_planner/data/content.dart';
 
 /// The schedule is the contract the whole word feature rests on. These tests
@@ -105,6 +106,38 @@ void main() {
     final dec26 = wordsInMonth(12, year: 2026);
     expect(dec26.length, 1);
     expect(dec26.single.en, 'Market');
+  });
+
+  group('calendar coverage', () {
+    test('the launch month is a reachable page', () {
+      expect(monthPageIndexOf(DateTime(2026, 12, 18)), 0);
+      expect(monthPageDate(0), DateTime(2026, 12, 1));
+      expect(monthPageDate(0).month, 12, reason: 'December 2026, not 2027');
+      expect(monthPageDate(0).year, 2026);
+    });
+
+    test('month page indices map 1:1 to 2027 months', () {
+      for (var m = 1; m <= 12; m++) {
+        final date = DateTime(planYear, m, 1);
+        expect(monthPageIndexOf(date), m);
+        expect(monthPageDate(m), date);
+      }
+    });
+
+    test('December 2026 and December 2027 are different pages', () {
+      expect(monthPageIndexOf(DateTime(2026, 12, 1)), 0);
+      expect(monthPageIndexOf(DateTime(2027, 12, 1)), 12);
+      expect(monthPageDate(0), isNot(equals(monthPageDate(12))));
+    });
+
+    test('coverage brackets the launch word exactly', () {
+      expect(coverageStart, words.first.from);
+      expect(coverageEnd, words.last.to);
+      expect(inCoverage(DateTime(2026, 12, 17)), isFalse);
+      expect(inCoverage(DateTime(2026, 12, 18)), isTrue, reason: 'the launch day');
+      expect(inCoverage(DateTime(2027, 12, 31)), isTrue);
+      expect(inCoverage(DateTime(2028, 1, 1)), isFalse);
+    });
   });
 
   group('audio files', () {
