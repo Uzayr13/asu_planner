@@ -1,0 +1,29 @@
+Fonts bundled in this application
+=================================
+
+The four font families in assets/fonts/ are distributed under the SIL Open
+Font License, Version 1.1 (the full text is in OFL-1.1.txt in this folder).
+The copyright notices below are the ones embedded in the font files.
+
+Playfair Display
+  Copyright 2017 The Playfair Display Project Authors
+  (https://github.com/clauseggers/Playfair-Display),
+  with Reserved Font Name "Playfair Display".
+
+Lato
+  Copyright (c) 2011-2015 by tyPoland Lukasz Dziedzic (http://www.typoland.com/)
+  with Reserved Font Name "Lato".
+
+Amiri
+  Copyright 2010-2022 The Amiri Project Authors
+  (https://github.com/aliftype/amiri).
+
+Noto Naskh Arabic
+  Copyright 2022 The Noto Project Authors
+  (https://github.com/notofonts/arabic).
+
+All four are licensed under the SIL Open Font License, Version 1.1.
+
+Software components (the Flutter SDK and the Dart packages listed under
+Settings > Open-source licences) are BSD-3-Clause or MIT; their full license
+texts ship with each package on pub.dev and with the Flutter SDK.

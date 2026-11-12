@@ -7,9 +7,12 @@ import '../backup/backup_io.dart';
 import '../layout/layout.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../version.dart';
 import '../widgets/common.dart';
+import 'legal.dart';
 
-/// Settings sheet: backup export, restore and the pre-import snapshot.
+/// Settings sheet: backup export, restore, the pre-import snapshot, getting
+/// the app, and the privacy & terms / licences notices.
 ///
 /// Opened from the gear on the bottom view bar. Follows the app's existing
 /// conventions — bilingual EN/AR labels, the `L` layout tokens, the same 1.4
@@ -164,6 +167,25 @@ class SettingsSheet extends StatelessWidget {
                   'مع حفظ نقطة استعادة تلقائياً.',
                   textDirection: TextDirection.rtl,
                   style: T.ar(11, color: C.navy.withValues(alpha: .65)),
+                ),
+                SizedBox(height: l.gapM),
+                const Divider(height: 1, color: C.line),
+                _ActionRow(
+                  icon: Icons.privacy_tip_rounded,
+                  en: 'Privacy & terms',
+                  ar: 'الخصوصية والشروط',
+                  onTap: () => LegalNotice.showPrivacyTerms(context),
+                ),
+                _ActionRow(
+                  icon: Icons.gavel_rounded,
+                  en: 'Open-source licences',
+                  ar: 'التراخيص',
+                  onTap: () => LegalNotice.showLicences(context),
+                ),
+                SizedBox(height: l.gapS),
+                Center(
+                  child: Text('Version $kAppVersion',
+                      style: T.sans(11, color: C.navy.withValues(alpha: .6))),
                 ),
               ],
             ),
