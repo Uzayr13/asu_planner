@@ -75,14 +75,15 @@ section for 90 days.
 
 The build is a static folder — `build/web` — that loads no third-party content,
 so it can go anywhere you control. The only outbound call is the update check
-to GitHub's API (see Security). GitHub Pages is deliberately **not** used: a
-`github.io` URL is public regardless of this repo being private, and the planner
-content is ASU's. Private options:
+to GitHub's API (see Security).
+
+**Hosting is moving to Cloudflare** — Cloudflare Pages, optionally gated with
+Cloudflare Access. GitHub Pages publishing has been removed and the site there
+is disabled: a `github.io` URL is public regardless of this repo being private,
+and the planner content is ASU's. Other options if Cloudflare changes:
 
 - **Any static host behind auth** — nginx, Caddy or a NAS on a LAN or VPN.
   Serve `build/web` as the document root.
-- **Netlify / Cloudflare Access** — password-protect or gate the site behind
-  your team's login. Free tiers cover both.
 - **A private server** — `python3 -m http.server 8080 --directory build/web` is
   enough for a trusted network.
 
